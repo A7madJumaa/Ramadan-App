@@ -83,7 +83,6 @@
 
         .hidden { display: none; }
 
-        /* مودال الأرشيف */
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
         .modal-content { background: var(--cream); padding: 0; border-radius: 25px; width: 92%; max-width: 420px; max-height: 85vh; overflow-y: auto; border: 2px solid var(--gold); }
         .archive-header { background: var(--cream); padding: 20px; text-align: center; border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 5; }
@@ -114,6 +113,7 @@
             <button onclick="showPage('prayer-screen')">🕌 الفرائض</button>
             <button onclick="showPage('sunnah-screen')">✨ السنن والضحى</button>
             <button onclick="showPage('taraweeh-screen')">🌙 التراويح</button>
+            <button onclick="showPage('witr-screen')">🌙 صلاة الوتر</button>
             <button onclick="showPage('quran-screen')">📖 ورد القرآن</button>
         </div>
     </div>
@@ -142,6 +142,12 @@
         <button onclick="showPage('main-menu')" style="width:auto; padding:5px 15px; background:#666; border:none; color:white;">↩ عودة</button>
         <h3>صلاة التراويح</h3>
         <div id="taraweeh-list"></div>
+    </div>
+
+    <div id="witr-screen" class="container hidden">
+        <button onclick="showPage('main-menu')" style="width:auto; padding:5px 15px; background:#666; border:none; color:white;">↩ عودة</button>
+        <h3>صلاة الوتر</h3>
+        <div id="witr-list"></div>
     </div>
 
     <div id="quran-screen" class="container hidden">
@@ -176,20 +182,26 @@
         let currentUser = localStorage.getItem('familyUser') || "";
         const today = new Date().toLocaleDateString('en-CA');
 
-        // مصفوفات الترتيب الثابتة
         const prayerOrder = ["الفجر", "الظهر", "العصر", "المغرب", "العشاء"];
         const sunnahOrder = ["سنة الفجر", "الضحى ☀️", "سنة الظهر", "سنة المغرب", "سنة العشاء"];
 
         function initOptions() {
+            // قائمة التراويح
             const trList = [8, 10, 12, 14, 16, 18, 20];
             document.getElementById('taraweeh-list').innerHTML = trList.map(n => `
                 <div class="item-card"><span>${n} ركعة</span> <input type="radio" name="tr" value="${n}" id="tr${n}" onclick="handleRadioClick(this)"></div>`).join('');
+            
+            // قائمة الوتر (أعداد فردية من 1 لـ 11)
+            const witrList = [1, 3, 5, 7, 9, 11];
+            document.getElementById('witr-list').innerHTML = witrList.map(n => `
+                <div class="item-card"><span>${n} ركعة</span> <input type="radio" name="wt" value="${n}" id="wt${n}" onclick="handleRadioClick(this)"></div>`).join('');
+
+            // قائمة القرآن
             const qList = [ {v:'10p', n:'10 صفحات'}, {v:'1j', n:'جزء'}, {v:'30p', n:'30 صفحة'}, {v:'2j', n:'جزئين'}, {v:'50p', n:'50 صفحة'}, {v:'3j', n:'3 أجزاء'} ];
             document.getElementById('quran-list').innerHTML = qList.map(q => `
                 <div class="item-card"><span>${q.n}</span> <input type="radio" name="q" value="${q.v}" id="q_${q.v}" onclick="handleRadioClick(this)"></div>`).join('');
         }
 
-        // ميزة إلغاء تحديد الخيار عند الضغط عليه مرة أخرى
         function handleRadioClick(radio) {
             if (radio.dataset.wasChecked === 'true') {
                 radio.checked = false;
@@ -223,6 +235,7 @@
             if(d.prayers) Object.values(d.prayers).forEach(v => v && (s += 10));
             if(d.sunnah) Object.values(d.sunnah).forEach(v => v && (s += 5));
             s += (parseInt(d.taraweeh) || 0) * 3;
+            s += (parseInt(d.witr) || 0) * 3; // نقاط الوتر
             s += qPts[d.quran] || 0;
             return s;
         }
@@ -232,6 +245,7 @@
                 prayers: { "الفجر": document.getElementById('fajr').checked, "الظهر": document.getElementById('dhuhr').checked, "العصر": document.getElementById('asr').checked, "المغرب": document.getElementById('maghrib').checked, "العشاء": document.getElementById('isha').checked },
                 sunnah: { "سنة الفجر": document.getElementById('sfajr').checked, "الضحى ☀️": document.getElementById('duha').checked, "سنة الظهر": document.getElementById('sdhuhr').checked, "سنة المغرب": document.getElementById('smaghrib').checked, "سنة العشاء": document.getElementById('sisha').checked },
                 taraweeh: document.querySelector('input[name="tr"]:checked')?.value || 0,
+                witr: document.querySelector('input[name="wt"]:checked')?.value || 0,
                 quran: document.querySelector('input[name="q"]:checked')?.value || "none"
             };
             db.ref('users/' + currentUser + '/days/' + today).set(data);
@@ -252,6 +266,7 @@
                 document.getElementById('smaghrib').checked = d.sunnah["سنة المغرب"];
                 document.getElementById('sisha').checked = d.sunnah["سنة العشاء"];
                 const tr = document.getElementById('tr'+d.taraweeh); if(tr) { tr.checked = true; tr.dataset.wasChecked = 'true'; }
+                const wt = document.getElementById('wt'+d.witr); if(wt) { wt.checked = true; wt.dataset.wasChecked = 'true'; }
                 const qr = document.getElementById('q_'+d.quran); if(qr) { qr.checked = true; qr.dataset.wasChecked = 'true'; }
                 document.getElementById('daily-pts').innerText = calculatePoints(d);
             });
@@ -297,6 +312,7 @@
 
                             <div class="category-title">| القيام والقرآن</div>
                             <div class="list-row"><span>${d.taraweeh || 0} ركعة</span> <span>التراويح</span> </div>
+                            <div class="list-row"><span>${d.witr || 0} ركعة</span> <span>الوتر</span> </div>
                             <div class="list-row"><span>${qNames[d.quran] || 'لم يقرأ'}</span> <span>القرآن</span> </div>
                             
                             <div class="list-row total-row">
