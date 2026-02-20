@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منافسة طاعات العائلة الملكية</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+
+    <style>
+        :root { --deep-oil: #1b3022; --gold: #c5a059; --cream: #f9f7f2; --soft-gold: rgba(197, 160, 89, 0.3); }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--deep-oil); background-image: url("https://www.transparenttextures.com/patterns/islamic-art.png"); display: flex; justify-content: center; min-height: 100vh; margin: 0; color: var(--deep-oil); }
+        .container { background: var(--cream); padding: 1.5rem; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); width: 95%; max-width: 480px; text-align: center; border: 3px solid var(--gold); margin: 20px 0; height: fit-content; }
+        .points-badge { background: var(--deep-oil); color: var(--gold); padding: 8px 15px; border-radius: 50px; font-weight: bold; display: inline-block; margin-bottom: 15px; }
+        button { width: 100%; padding: 14px; margin: 8px 0; cursor: pointer; border: 1px solid var(--gold); border-radius: 15px; background: var(--deep-oil); color: var(--gold); font-weight: bold; transition: 0.3s; }
+        button:hover { background: var(--gold); color: var(--deep-oil); }
+        .item-card { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; background: white; margin-bottom: 8px; border-radius: 15px; border: 1px solid var(--soft-gold); cursor: pointer; }
+        .hidden { display: none; }
+        .leaderboard { background: white; border-radius: 20px; padding: 15px; margin-top: 15px; border: 2px solid var(--gold); }
+        .rank-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; border-radius: 10px; }
+        .rank-item:hover { background: var(--soft-gold); }
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
+        .modal-content { background: var(--cream); padding: 20px; border-radius: 25px; width: 90%; max-width: 420px; max-height: 80vh; overflow-y: auto; border: 2px solid var(--gold); text-align: right; }
+        .history-card { background: white; border: 1px solid var(--gold); border-radius: 15px; padding: 15px; margin-bottom: 15px; }
+        .tag { background: #eee; padding: 3px 8px; border-radius: 5px; font-size: 0.8rem; margin: 2px; display: inline-block; }
+        .back-btn { background: #666; color: white; border: none; width: auto; padding: 8px 20px; border-radius: 10px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen" class="container">
+        <h2>🌙 منافسة طاعات العائلة</h2>
+        <input type="text" id="username-input" placeholder="اسمك (أحمد، عمر، حلا، يونس، مؤيد)" style="width:85%; padding:12px; border-radius:10px; border:1px solid var(--gold); text-align:center;">
+        <button onclick="login()">دخول الحساب</button>
+    </div>
+
+    <div id="main-menu" class="container hidden">
+        <div class="points-badge">نقاطك اليوم: <span id="daily-pts">0</span> 🏆</div>
+        <h3 id="welcome-msg"></h3>
+        <div class="leaderboard">
+            <h4>🏆 ترتيب المتنافسين</h4>
+            <div id="ranks-list">جاري المزامنة...</div>
+        </div>
+        <button onclick="showPage('prayer-screen')" style="margin-top:20px">الصلوات</button>
+        <button onclick="showPage('sunnah-screen')">السنن والضحى</button>
+        <button onclick="showPage('taraweeh-screen')">التراويح</button>
+        <button onclick="showPage('quran-screen')">ورد القرآن</button>
+        <button class="back-btn" onclick="logout()" style="width:100%">تبديل الحساب</button>
+    </div>
+
+    <div id="prayer-screen" class="container hidden">
+        <button class="back-btn" onclick="showPage('main-menu')">↩ عودة</button>
+        <h3>الصلوات المفروضة</h3>
+        <div class="item-card"><span>الفجر</span> <input type="checkbox" id="fajr" onchange="saveToCloud()"></div>
+        <div class="item-card"><span>الظهر</span> <input type="checkbox" id="dhuhr" onchange="saveToCloud()"></div>
+        <div class="item-card"><span>العصر</span> <input type="checkbox" id="asr" onchange="saveToCloud()"></div>
+        <div class="item-card"><span>المغرب</span> <input type="checkbox" id="maghrib" onchange="saveToCloud()"></div>
+        <div class="item-card"><span>العشاء</span> <input type="checkbox" id="isha" onchange="saveToCloud()"></div>
+    </div>
+
+    <div id="sunnah-screen" class="container hidden">
+        <button class="back-btn" onclick="showPage('main-menu')">↩ عودة</button>
+        <h3>السنن</h3>
+        <div class="item-card"><span>سنة الفجر</span> <input type="checkbox" id="sfajr" onchange="saveToCloud()"></div>
+        <div class="item-card"><span>الضحى ☀️</span> <input type="checkbox" id="duha" onchange="saveToCloud()"></div>
+        <div class="item-card"><span>سنة الظهر</span> <input type="checkbox" id="sdhuhr" onchange="saveToCloud()"></div>
+        <div class="item-card"><span>سنة المغرب</span> <input type="checkbox" id="smaghrib" onchange="saveToCloud()"></div>
+        <div class="item-card"><span>سنة العشاء</span> <input type="checkbox" id="sisha" onchange="saveToCloud()"></div>
+    </div>
+
+    <div id="taraweeh-screen" class="container hidden">
+        <button class="back-btn" onclick="showPage('main-menu')">↩ عودة</button>
+        <h3>التراويح</h3>
+        <div id="taraweeh-list"></div>
+    </div>
+
+    <div id="quran-screen" class="container hidden">
+        <button class="back-btn" onclick="showPage('main-menu')">↩ عودة</button>
+        <h3>القرآن الكريم</h3>
+        <div id="quran-list"></div>
+    </div>
+
+    <div id="archive-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-user-title"></h3>
+            <div id="modal-history-body"></div>
+            <button onclick="closeModal()" class="back-btn">إغلاق</button>
+        </div>
+    </div>
+
+    <script>
+        // دمج بياناتك من الصورة الثالثة
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpwmA1_4zU7flfgXopTZPTaJOAjntAH-w",
+            authDomain: "ramadan-tracker-c23a1.firebaseapp.com",
+            databaseURL: "https://ramadan-tracker-c23a1-default-rtdb.firebaseio.com",
+            projectId: "ramadan-tracker-c23a1",
+            storageBucket: "ramadan-tracker-c23a1.firebasestorage.app",
+            messagingSenderId: "760493486182",
+            appId: "1:760493486182:web:a8c7c1013a5a0d115b7da7",
+            measurementId: "G-LQM6D1M0ZS"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const usersList = ["أحمد", "عمر", "حلا", "يونس", "مؤيد"];
+        let currentUser = localStorage.getItem('familyUser') || "";
+        const today = new Date().toLocaleDateString('en-CA');
+
+        function initOptions() {
+            const trList = [8, 10, 12, 14, 16, 18, 20];
+            document.getElementById('taraweeh-list').innerHTML = trList.map(n => `
+                <div class="item-card" onclick="document.getElementById('tr${n}').click()">
+                    <span>${n} ركعة</span> <input type="radio" name="tr" value="${n}" id="tr${n}" onchange="saveToCloud()">
+                </div>`).join('');
+
+            const qList = [ {v:'10p', n:'10 صفحات'}, {v:'1j', n:'جزء'}, {v:'30p', n:'30 صفحة'}, {v:'2j', n:'جزئين'}, {v:'50p', n:'50 صفحة'}, {v:'3j', n:'3 أجزاء'} ];
+            document.getElementById('quran-list').innerHTML = qList.map(q => `
+                <div class="item-card" onclick="document.getElementById('q_${q.v}').click()">
+                    <span>${q.n}</span> <input type="radio" name="q" value="${q.v}" id="q_${q.v}" onchange="saveToCloud()">
+                </div>`).join('');
+        }
+
+        function login() {
+            const name = document.getElementById('username-input').value.trim();
+            if (usersList.includes(name)) {
+                currentUser = name;
+                localStorage.setItem('familyUser', name);
+                showPage('main-menu');
+            } else { alert("عذراً، هذا الاسم غير مسجل!"); }
+        }
+
+        function logout() { localStorage.removeItem('familyUser'); location.reload(); }
+
+        function showPage(id) {
+            document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            if (id === 'main-menu') { updateLeaderboard(); loadFromCloud(); }
+        }
+
+        function saveToCloud() {
+            if(!currentUser) return;
+            const data = {
+                prayers: { "الفجر": document.getElementById('fajr').checked, "الظهر": document.getElementById('dhuhr').checked, "العصر": document.getElementById('asr').checked, "المغرب": document.getElementById('maghrib').checked, "العشاء": document.getElementById('isha').checked },
+                sunnah: { "سنة الفجر": document.getElementById('sfajr').checked, "الضحى": document.getElementById('duha').checked, "سنة الظهر": document.getElementById('sdhuhr').checked, "سنة المغرب": document.getElementById('smaghrib').checked, "سنة العشاء": document.getElementById('sisha').checked },
+                taraweeh: document.querySelector('input[name="tr"]:checked')?.value || 0,
+                quran: document.querySelector('input[name="q"]:checked')?.value || "none"
+            };
+            db.ref('users/' + currentUser + '/days/' + today).set(data);
+        }
+
+        function loadFromCloud() {
+            db.ref('users/' + currentUser + '/days/' + today).once('value', (snap) => {
+                const d = snap.val(); if(!d) return;
+                document.getElementById('fajr').checked = d.prayers["الفجر"];
+                document.getElementById('dhuhr').checked = d.prayers["الظهر"];
+                document.getElementById('asr').checked = d.prayers["العصر"];
+                document.getElementById('maghrib').checked = d.prayers["المغرب"];
+                document.getElementById('isha').checked = d.prayers["العشاء"];
+                document.getElementById('sfajr').checked = d.sunnah["سنة الفجر"];
+                document.getElementById('duha').checked = d.sunnah["الضحى"];
+                document.getElementById('sdhuhr').checked = d.sunnah["سنة الظهر"];
+                document.getElementById('smaghrib').checked = d.sunnah["سنة المغرب"];
+                document.getElementById('sisha').checked = d.sunnah["سنة العشاء"];
+                if(d.taraweeh) document.getElementById('tr'+d.taraweeh).checked = true;
+                if(d.quran) document.getElementById('q_'+d.quran).checked = true;
+            });
+        }
+
+        function calculatePoints(d) {
+            if(!d) return 0;
+            const qPts = { "none":0, "10p":20, "1j":50, "30p":70, "2j":100, "50p":130, "3j":200 };
+            let s = 0;
+            if(d.prayers) Object.values(d.prayers).forEach(v => v && (s += 10));
+            if(d.sunnah) Object.values(d.sunnah).forEach(v => v && (s += 5));
+            s += (parseInt(d.taraweeh) || 0) * 3;
+            s += qPts[d.quran] || 0;
+            return s;
+        }
+
+        function updateLeaderboard() {
+            db.ref('users').on('value', (snap) => {
+                const all = snap.val();
+                let ranks = [];
+                usersList.forEach(name => {
+                    let total = 0;
+                    if(all && all[name] && all[name].days) {
+                        Object.values(all[name].days).forEach(day => { total += calculatePoints(day); });
+                    }
+                    ranks.push({ name, total });
+                });
+                ranks.sort((a, b) => b.total - a.total);
+                document.getElementById('ranks-list').innerHTML = ranks.map((r, i) => `
+                    <div class="rank-item" onclick="viewArchive('${r.name}')">
+                        <span>${i+1}. ${r.name}</span>
+                        <span>${r.total} نقطة</span>
+                    </div>`).join('');
+                document.getElementById('welcome-msg').innerText = "طابت طاعتك يا " + currentUser;
+            });
+        }
+
+        function viewArchive(name) {
+            db.ref('users/' + name + '/days').once('value', (snap) => {
+                const days = snap.val();
+                document.getElementById('modal-user-title').innerText = "سجل " + name;
+                let html = "";
+                if(!days) html = "لا توجد بيانات مسجلة لهذا المستخدم بعد.";
+                else {
+                    Object.keys(days).sort().reverse().forEach(date => {
+                        const d = days[date];
+                        html += `<div class="history-card"><b>📅 ${date}</b> (${calculatePoints(d)} ن)<br>
+                        ${Object.keys(d.prayers).map(p => `<span class="tag">${d.prayers[p]?'✅':'❌'} ${p}</span>`).join('')}
+                        <br><span class="tag">تراويح: ${d.taraweeh}</span></div>`;
+                    });
+                }
+                document.getElementById('modal-history-body').innerHTML = html;
+                document.getElementById('archive-modal').style.display = "flex";
+            });
+        }
+
+        function closeModal() { document.getElementById('archive-modal').style.display = "none"; }
+        window.onload = () => { initOptions(); if(currentUser) showPage('main-menu'); };
+    </script>
+</body>
+</html>
