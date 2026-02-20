@@ -43,17 +43,21 @@
             height: fit-content;
         }
 
+        /* إصلاح حجم زر تبديل الحساب */
         .logout-mini {
             position: absolute;
             top: 15px;
             left: 15px;
-            background: none;
+            background: transparent;
             border: 1px solid var(--gold);
             color: var(--gold);
-            padding: 4px 10px;
+            padding: 5px 10px;
             font-size: 0.7rem;
             border-radius: 8px;
             cursor: pointer;
+            width: auto !important; /* لضمان عدم التمدد */
+            display: inline-block;
+            line-height: 1;
         }
 
         .points-badge { 
@@ -100,14 +104,12 @@
         
         .archive-header { background: var(--cream); padding: 20px; text-align: center; border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 5; }
         .day-section { padding: 15px; border-bottom: 8px solid var(--gold); }
-        .day-title { text-align: center; font-weight: bold; font-size: 1.2rem; margin-bottom: 15px; background: var(--deep-oil); color: var(--gold); padding: 5px; border-radius: 10px; }
+        .day-title { text-align: center; font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; background: var(--deep-oil); color: var(--gold); padding: 5px; border-radius: 10px; }
         
         .list-row { display: flex; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid #eee; align-items: center; }
-        .category-title { color: var(--gold); font-weight: bold; padding: 10px 15px 5px; text-align: right; font-size: 0.9rem; border-right: 4px solid var(--gold); margin-top: 10px; background: rgba(197, 160, 89, 0.05); }
+        .category-title { color: var(--gold); font-weight: bold; padding: 8px 15px 5px; text-align: right; font-size: 0.9rem; border-right: 4px solid var(--gold); margin-top: 10px; background: rgba(197, 160, 89, 0.05); }
         
-        .status-icon { font-size: 1.1rem; }
         .total-row { background: var(--white); border: 1px dashed var(--gold); font-weight: bold; margin-top: 15px; border-radius: 10px; }
-
         .rank-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; }
     </style>
 </head>
@@ -120,7 +122,7 @@
     </div>
 
     <div id="main-menu" class="container hidden">
-        <button class="logout-mini" onclick="logout()">تبديل الحساب</button>
+        <button class="logout-mini" onclick="logout()">تبديل</button>
         <div class="points-badge">نقاطك اليوم: <span id="daily-pts">0</span> 🏆</div>
         <h3 id="welcome-msg"></h3>
         <div style="background: white; border-radius: 20px; padding: 10px; border: 1px solid var(--gold);">
@@ -170,7 +172,7 @@
     <div id="archive-modal" class="modal">
         <div class="modal-content">
             <div class="archive-header">
-                <h3 id="modal-user-title" style="margin:0; color:var(--deep-oil)"></h3>
+                <h3 id="modal-user-title" style="margin:0;"></h3>
                 <button onclick="closeModal()" style="width:auto; padding:5px 20px; margin-top:10px; background:#666; border:none; color:white;">إغلاق</button>
             </div>
             <div id="modal-history-body"></div>
@@ -198,7 +200,9 @@
             const trList = [8, 10, 12, 14, 16, 18, 20];
             document.getElementById('taraweeh-list').innerHTML = trList.map(n => `
                 <div class="item-card"><span>${n} ركعة</span> <input type="radio" name="tr" value="${n}" id="tr${n}" onchange="saveToCloud()"></div>`).join('');
-            const qList = [ {v:'10p', n:'10 صفحات'}, {v:'1j', n:'جزء'}, {v:'30p', n:'30 صفحة'}, {v:'2j', n:'جزئين'}, {v:'3j', n:'3 أجزاء'} ];
+            
+            // إضافة خيار 50 صفحة في الترتيب الصحيح
+            const qList = [ {v:'10p', n:'10 صفحات'}, {v:'1j', n:'جزء'}, {v:'30p', n:'30 صفحة'}, {v:'2j', n:'جزئين'}, {v:'50p', n:'50 صفحة'}, {v:'3j', n:'3 أجزاء'} ];
             document.getElementById('quran-list').innerHTML = qList.map(q => `
                 <div class="item-card"><span>${q.n}</span> <input type="radio" name="q" value="${q.v}" id="q_${q.v}" onchange="saveToCloud()"></div>`).join('');
         }
@@ -219,7 +223,7 @@
 
         function calculatePoints(d) {
             if(!d) return 0;
-            const qPts = { "none":0, "10p":20, "1j":50, "30p":70, "2j":100, "3j":200 };
+            const qPts = { "none":0, "10p":20, "1j":50, "30p":70, "2j":100, "50p":130, "3j":200 };
             let s = 0;
             if(d.prayers) Object.values(d.prayers).forEach(v => v && (s += 10));
             if(d.sunnah) Object.values(d.sunnah).forEach(v => v && (s += 5));
@@ -279,11 +283,11 @@
         function viewArchive(name) {
             db.ref('users/' + name + '/days').once('value', (snap) => {
                 const days = snap.val();
-                document.getElementById('modal-user-title').innerText = "سجل إنجازات " + name;
+                document.getElementById('modal-user-title').innerText = "إنجازات " + name;
                 let html = "";
-                if(!days) html = "<p style='padding:20px'>لا يوجد بيانات مسجلة.</p>";
+                if(!days) html = "<p style='padding:20px'>لا يوجد بيانات.</p>";
                 else {
-                    const qNames = { "none":"لم يقرأ", "10p":"10 صفحات", "1j":"جزء", "30p":"30 صفحة", "2j":"جزئين", "3j":"3 أجزاء" };
+                    const qNames = { "none":"لم يقرأ", "10p":"10 صفحات", "1j":"جزء", "30p":"30 صفحة", "2j":"جزئين", "50p":"50 صفحة", "3j":"3 أجزاء" };
                     Object.keys(days).sort().reverse().forEach(date => {
                         const d = days[date];
                         html += `
@@ -316,5 +320,4 @@
         window.onload = () => { initOptions(); if(currentUser) showPage('main-menu'); };
     </script>
 </body>
-                </html>
-    
+</html>
