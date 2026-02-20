@@ -269,7 +269,7 @@
                 ranks.sort((a, b) => b.total - a.total);
                 document.getElementById('ranks-list').innerHTML = ranks.map((r, i) => `
                     <div class="rank-item" style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; cursor:pointer;" onclick="viewArchive('${r.name}')">
-                        <span>${i+1}. ${r.name}</span> <b>${r.total} ن</b>
+                        <span>${i+1}. ${r.name}</span> <b>${r.total} نقطة</b>
                     </div>`).join('');
                 document.getElementById('welcome-msg').innerText = "طابت طاعتك يا " + currentUser;
             });
