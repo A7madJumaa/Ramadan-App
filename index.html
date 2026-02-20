@@ -3,54 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منافسة العائلة الملكية</title>
+    <title>منافسة طاعات العائلة الملكية</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <style>
         :root { 
-            --primary-light: #f4f7f5; /* خلفية فاتحة ومريحة */
-            --accent-gold: #d4af37; 
-            --text-main: #2e4d3a; 
+            --deep-oil: #1b3022; 
+            --gold: #c5a059; 
+            --cream: #f9f7f2; 
             --white: #ffffff;
-            --soft-border: rgba(212, 175, 55, 0.3);
+            --soft-gold: rgba(197, 160, 89, 0.2);
         }
 
         body { 
             font-family: 'Segoe UI', Tahoma, sans-serif; 
-            background-color: var(--primary-light); 
+            background-color: var(--deep-oil); 
             background-image: url("https://www.transparenttextures.com/patterns/islamic-art.png"); 
             display: flex; 
             justify-content: center; 
             min-height: 100vh; 
             margin: 0; 
-            color: var(--text-main); 
+            color: var(--deep-oil); 
         }
 
         .container { 
-            background: var(--white); 
-            padding: 2rem; 
+            background: var(--cream); 
+            padding: 1.5rem; 
             border-radius: 30px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3); 
             width: 95%; 
             max-width: 480px; 
             text-align: center; 
-            border: 1px solid var(--soft-border); 
+            border: 2px solid var(--gold); 
             margin: 20px 0; 
             height: fit-content; 
         }
 
         .points-badge { 
-            background: var(--text-main); 
-            color: var(--accent-gold); 
-            padding: 12px 25px; 
+            background: var(--deep-oil); 
+            color: var(--gold); 
+            padding: 10px 20px; 
             border-radius: 50px; 
             font-weight: bold; 
             display: inline-block; 
-            margin-bottom: 20px; 
-            font-size: 1.1rem;
-            box-shadow: 0 4px 12px rgba(46, 77, 58, 0.2);
+            margin-bottom: 15px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
         button { 
@@ -58,30 +57,25 @@
             padding: 14px; 
             margin: 8px 0; 
             cursor: pointer; 
-            border: 1px solid var(--accent-gold); 
+            border: 1px solid var(--gold); 
             border-radius: 15px; 
-            background: var(--white); 
-            color: var(--text-main); 
-            font-weight: 600; 
-            transition: all 0.3s ease; 
+            background: var(--deep-oil); 
+            color: var(--gold); 
+            font-weight: bold; 
+            transition: 0.3s; 
         }
 
-        button:hover { 
-            background: var(--accent-gold); 
-            color: var(--white); 
-            transform: translateY(-2px);
-        }
+        button:hover { background: var(--gold); color: var(--deep-oil); }
 
         .item-card { 
             display: flex; 
             align-items: center; 
             justify-content: space-between; 
-            padding: 15px 20px; 
-            background: var(--primary-light); 
-            margin-bottom: 12px; 
+            padding: 12px 18px; 
+            background: var(--white); 
+            margin-bottom: 10px; 
             border-radius: 15px; 
-            border: 1px solid var(--soft-border); 
-            cursor: pointer; 
+            border: 1px solid var(--soft-gold); 
         }
 
         .hidden { display: none; }
@@ -89,102 +83,70 @@
         .leaderboard { 
             background: var(--white); 
             border-radius: 20px; 
-            padding: 10px; 
+            padding: 15px; 
             margin-top: 15px; 
-            border: 1px solid var(--soft-border); 
+            border: 1px solid var(--gold); 
         }
 
         .rank-item { 
             display: flex; 
             justify-content: space-between; 
-            padding: 15px; 
-            border-bottom: 1px solid #f0f0f0; 
+            padding: 12px; 
+            border-bottom: 1px solid #eee; 
             cursor: pointer; 
-            border-radius: 12px; 
-            transition: background 0.2s;
+            border-radius: 10px; 
         }
 
-        .rank-item:hover { background: #fafafa; }
+        .rank-item:hover { background: var(--soft-gold); }
 
-        /* الأرشيف */
-        .modal { 
-            display: none; 
-            position: fixed; 
-            z-index: 100; 
-            left: 0; 
-            top: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.5); 
-            justify-content: center; 
-            align-items: center; 
-            backdrop-filter: blur(4px);
-        }
-
-        .modal-content { 
-            background: var(--white); 
-            padding: 25px; 
-            border-radius: 25px; 
-            width: 90%; 
-            max-width: 420px; 
-            max-height: 80vh; 
-            overflow-y: auto; 
-            border: 2px solid var(--accent-gold); 
-            text-align: right; 
-        }
-
+        /* الأرشيف المطور */
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; }
+        .modal-content { background: var(--cream); padding: 20px; border-radius: 25px; width: 90%; max-width: 420px; max-height: 80vh; overflow-y: auto; border: 2px solid var(--gold); text-align: right; }
+        
         .history-card { 
-            background: var(--primary-light); 
-            border: 1px solid var(--soft-border); 
-            border-radius: 18px; 
+            background: var(--white); 
+            border: 1px solid var(--gold); 
+            border-radius: 15px; 
             padding: 15px; 
             margin-bottom: 15px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
         }
 
         .tag { 
-            background: var(--white); 
-            padding: 4px 10px; 
-            border-radius: 8px; 
-            font-size: 0.85rem; 
-            margin: 3px; 
+            background: #f0f0f0; 
+            padding: 3px 8px; 
+            border-radius: 5px; 
+            font-size: 0.8rem; 
+            margin: 2px; 
             display: inline-block; 
-            border: 1px solid #eee;
+            border: 1px solid #ddd;
         }
+        .tag.check { background: #e7f3eb; color: #2e7d32; border-color: #a5d6a7; }
 
-        .tag.done { border-color: var(--accent-gold); color: #b8860b; }
-
-        .back-btn { 
-            background: #6c757d; 
-            color: white; 
-            border: none; 
-            padding: 10px 20px; 
-            border-radius: 12px; 
-            margin-top: 10px; 
-            cursor: pointer;
-        }
+        .back-btn { background: #666; color: white; border: none; width: auto; padding: 8px 20px; border-radius: 10px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <div id="login-screen" class="container">
-        <h2>🌙 منافسة العائلة</h2>
-        <input type="text" id="username-input" placeholder="اكتب اسمك للمشاركة..." style="width:80%; padding:15px; border-radius:12px; border:1px solid #ddd; text-align:center;">
-        <button onclick="login()" style="background: var(--text-main); color: var(--accent-gold); margin-top: 15px;">دخول</button>
+        <h2 style="color: var(--deep-oil)">🌙 منافسة العائلة الملكية</h2>
+        <input type="text" id="username-input" placeholder="اكتب اسمك (أحمد، عمر، حلا...)" style="width:85%; padding:12px; border-radius:10px; border:1px solid var(--gold); text-align:center;">
+        <button onclick="login()">دخول الحساب</button>
     </div>
 
     <div id="main-menu" class="container hidden">
         <div class="points-badge">نقاطك اليوم: <span id="daily-pts">0</span> 🏆</div>
         <h3 id="welcome-msg"></h3>
         <div class="leaderboard">
-            <h4>📈 جدول الترتيب العام</h4>
+            <h4>🏆 ترتيب المتنافسين</h4>
             <div id="ranks-list">جاري المزامنة...</div>
         </div>
-        <div style="margin-top: 20px;">
-            <button onclick="showPage('prayer-screen')">🕌 الصلوات</button>
+        <div style="margin-top: 15px;">
+            <button onclick="showPage('prayer-screen')">🕌 الصلوات المفروضة</button>
             <button onclick="showPage('sunnah-screen')">✨ السنن والضحى</button>
-            <button onclick="showPage('taraweeh-screen')">🌙 التراويح</button>
+            <button onclick="showPage('taraweeh-screen')">🌙 صلاة التراويح</button>
             <button onclick="showPage('quran-screen')">📖 ورد القرآن</button>
-            <button class="back-btn" onclick="logout()" style="width:100%; background: #f8f9fa; color: #666;">تبديل الحساب</button>
+            <button class="back-btn" onclick="logout()" style="width:100%">تبديل الحساب</button>
         </div>
     </div>
 
@@ -224,7 +186,7 @@
         <div class="modal-content">
             <h3 id="modal-user-title"></h3>
             <div id="modal-history-body"></div>
-            <button onclick="closeModal()" class="back-btn" style="width: 100%;">إغلاق</button>
+            <button onclick="closeModal()" class="back-btn" style="width:100%">إغلاق</button>
         </div>
     </div>
 
@@ -236,13 +198,11 @@
             projectId: "ramadan-tracker-c23a1",
             storageBucket: "ramadan-tracker-c23a1.firebasestorage.app",
             messagingSenderId: "760493486182",
-            appId: "1:760493486182:web:a8c7c1013a5a0d115b7da7",
-            measurementId: "G-LQM6D1M0ZS"
+            appId: "1:760493486182:web:a8c7c1013a5a0d115b7da7"
         };
         
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-
         const usersList = ["أحمد", "عمر", "حلا", "يونس", "مؤيد"];
         let currentUser = localStorage.getItem('familyUser') || "";
         const today = new Date().toLocaleDateString('en-CA');
@@ -250,24 +210,16 @@
         function initOptions() {
             const trList = [8, 10, 12, 14, 16, 18, 20];
             document.getElementById('taraweeh-list').innerHTML = trList.map(n => `
-                <div class="item-card">
-                    <span>${n} ركعة</span> <input type="radio" name="tr" value="${n}" id="tr${n}" onchange="saveToCloud()">
-                </div>`).join('');
-
-            const qList = [ {v:'10p', n:'10 صفحات'}, {v:'1j', n:'جزء'}, {v:'30p', n:'30 صفحة'}, {v:'2j', n:'جزئين'}, {v:'50p', n:'50 صفحة'}, {v:'3j', n:'3 أجزاء'} ];
+                <div class="item-card"><span>${n} ركعة</span> <input type="radio" name="tr" value="${n}" id="tr${n}" onchange="saveToCloud()"></div>`).join('');
+            const qList = [ {v:'10p', n:'10 صفحات'}, {v:'1j', n:'جزء'}, {v:'30p', n:'30 صفحة'}, {v:'2j', n:'جزئين'}, {v:'3j', n:'3 أجزاء'} ];
             document.getElementById('quran-list').innerHTML = qList.map(q => `
-                <div class="item-card">
-                    <span>${q.n}</span> <input type="radio" name="q" value="${q.v}" id="q_${q.v}" onchange="saveToCloud()">
-                </div>`).join('');
+                <div class="item-card"><span>${q.n}</span> <input type="radio" name="q" value="${q.v}" id="q_${q.v}" onchange="saveToCloud()"></div>`).join('');
         }
 
         function login() {
             const name = document.getElementById('username-input').value.trim();
-            if (usersList.includes(name)) {
-                currentUser = name;
-                localStorage.setItem('familyUser', name);
-                showPage('main-menu');
-            } else { alert("عذراً، الاسم غير موجود."); }
+            if (usersList.includes(name)) { currentUser = name; localStorage.setItem('familyUser', name); showPage('main-menu'); }
+            else { alert("الاسم غير مسجل!"); }
         }
 
         function logout() { localStorage.removeItem('familyUser'); location.reload(); }
@@ -280,7 +232,7 @@
 
         function calculatePoints(d) {
             if(!d) return 0;
-            const qPts = { "none":0, "10p":20, "1j":50, "30p":70, "2j":100, "50p":130, "3j":200 };
+            const qPts = { "none":0, "10p":20, "1j":50, "30p":70, "2j":100, "3j":200 };
             let s = 0;
             if(d.prayers) Object.values(d.prayers).forEach(v => v && (s += 10));
             if(d.sunnah) Object.values(d.sunnah).forEach(v => v && (s += 5));
@@ -290,7 +242,6 @@
         }
 
         function saveToCloud() {
-            if(!currentUser) return;
             const data = {
                 prayers: { "الفجر": document.getElementById('fajr').checked, "الظهر": document.getElementById('dhuhr').checked, "العصر": document.getElementById('asr').checked, "المغرب": document.getElementById('maghrib').checked, "العشاء": document.getElementById('isha').checked },
                 sunnah: { "سنة الفجر": document.getElementById('sfajr').checked, "الضحى": document.getElementById('duha').checked, "سنة الظهر": document.getElementById('sdhuhr').checked, "سنة المغرب": document.getElementById('smaghrib').checked, "سنة العشاء": document.getElementById('sisha').checked },
@@ -326,16 +277,13 @@
                 let ranks = [];
                 usersList.forEach(name => {
                     let total = 0;
-                    if(all && all[name] && all[name].days) {
-                        Object.values(all[name].days).forEach(day => total += calculatePoints(day));
-                    }
+                    if(all && all[name] && all[name].days) Object.values(all[name].days).forEach(day => total += calculatePoints(day));
                     ranks.push({ name, total });
                 });
                 ranks.sort((a, b) => b.total - a.total);
                 document.getElementById('ranks-list').innerHTML = ranks.map((r, i) => `
                     <div class="rank-item" onclick="viewArchive('${r.name}')">
-                        <span>${i+1}. ${r.name}</span>
-                        <span style="font-weight:bold; color:var(--accent-gold);">${r.total} ن</span>
+                        <span>${i+1}. ${r.name}</span> <b>${r.total} ن</b>
                     </div>`).join('');
                 document.getElementById('welcome-msg').innerText = "طابت طاعتك يا " + currentUser;
             });
@@ -346,23 +294,15 @@
                 const days = snap.val();
                 document.getElementById('modal-user-title').innerText = "سجل " + name;
                 let html = "";
-                if(!days) html = "<p>لا يوجد سجل بعد لهذا المستخدم.</p>";
+                if(!days) html = "لا يوجد بيانات.";
                 else {
-                    const qNames = { "none":"-", "10p":"10 ص", "1j":"جزء", "30p":"30 ص", "2j":"جزءين", "50p":"50 ص", "3j":"3 أجزاء" };
                     Object.keys(days).sort().reverse().forEach(date => {
                         const d = days[date];
                         html += `
                         <div class="history-card">
-                            <div style="border-bottom:1px solid #ddd; margin-bottom:10px; padding-bottom:5px;">
-                                <b>📅 ${date}</b> <span style="float:left; color:var(--accent-gold)">${calculatePoints(d)} ن</span>
-                            </div>
-                            <div>
-                                ${Object.keys(d.prayers).map(p => `<span class="tag ${d.prayers[p]?'done':''}"> ${d.prayers[p]?'✅':'❌'} ${p}</span>`).join('')}
-                            </div>
-                            <div style="margin-top:10px;">
-                                <span class="tag">تراويح: ${d.taraweeh || 0}</span>
-                                <span class="tag">قرآن: ${qNames[d.quran] || '-'}</span>
-                            </div>
+                            <b>📅 ${date}</b> <span style="float:left; color:var(--gold)">${calculatePoints(d)} ن</span><br><br>
+                            ${Object.keys(d.prayers).map(p => `<span class="tag ${d.prayers[p]?'check':''}"> ${d.prayers[p]?'✅':'❌'} ${p}</span>`).join('')}
+                            <br><span class="tag">تراويح: ${d.taraweeh || 0}</span>
                         </div>`;
                     });
                 }
@@ -375,5 +315,5 @@
         window.onload = () => { initOptions(); if(currentUser) showPage('main-menu'); };
     </script>
 </body>
-    </html>
-            
+                                                          </html>
+                                                          
