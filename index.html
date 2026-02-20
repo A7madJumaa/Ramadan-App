@@ -191,12 +191,11 @@
         const usersList = ["احمد", "عمر", "حلا", "يونس", "مؤيد","جمال"];
         let currentUser = localStorage.getItem('familyUser') || "";
         
-        // تعديل: جلب التاريخ بناءً على التوقيت المحلي للجهاز بدقة
+        // جلب التاريخ المحلي الصحيح
         const getToday = () => {
             const now = new Date();
             const offset = now.getTimezoneOffset() * 60000;
-            const localISODate = new Date(now - offset).toISOString().split('T')[0];
-            return localISODate;
+            return new Date(now - offset).toISOString().split('T')[0];
         };
 
         function getRamadanDate(dateString) {
@@ -204,10 +203,7 @@
             const currentDate = new Date(dateString);
             const diffTime = currentDate - startOfRamadan;
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1;
-            
-            if (diffDays >= 1 && diffDays <= 30) {
-                return `${dateString} (${diffDays} رمضان)`;
-            }
+            if (diffDays >= 1 && diffDays <= 30) return `${dateString} (${diffDays} رمضان)`;
             return dateString;
         }
 
@@ -276,29 +272,31 @@
                 quran: document.querySelector('input[name="q"]:checked')?.value || "none"
             };
             db.ref('users/' + currentUser + '/days/' + today).set(data);
-            document.getElementById('daily-pts').innerText = calculatePoints(data);
+            // لا حاجة لتحديث النقاط يدوياً هنا، الـ listener في الترتيب سيقوم بذلك
         }
 
         function loadFromCloud() {
             const today = getToday(); 
             db.ref('users/' + currentUser + '/days/' + today).once('value', (snap) => {
                 const d = snap.val(); 
-                if(!d) {
-                    document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
-                    document.querySelectorAll('input[type="radio"]').forEach(r => {r.checked = false; r.dataset.wasChecked = 'false';});
-                    document.getElementById('daily-pts').innerText = "0";
-                    return;
+                document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+                document.querySelectorAll('input[type="radio"]').forEach(r => {r.checked = false; r.dataset.wasChecked = 'false';});
+                if(!d) { document.getElementById('daily-pts').innerText = "0"; return; }
+                
+                if(d.prayers) {
+                    document.getElementById('fajr').checked = d.prayers["الفجر"] || false;
+                    document.getElementById('dhuhr').checked = d.prayers["الظهر"] || false;
+                    document.getElementById('asr').checked = d.prayers["العصر"] || false;
+                    document.getElementById('maghrib').checked = d.prayers["المغرب"] || false;
+                    document.getElementById('isha').checked = d.prayers["العشاء"] || false;
                 }
-                document.getElementById('fajr').checked = d.prayers["الفجر"];
-                document.getElementById('dhuhr').checked = d.prayers["الظهر"];
-                document.getElementById('asr').checked = d.prayers["العصر"];
-                document.getElementById('maghrib').checked = d.prayers["المغرب"];
-                document.getElementById('isha').checked = d.prayers["العشاء"];
-                document.getElementById('sfajr').checked = d.sunnah["سنة الفجر"];
-                document.getElementById('duha').checked = d.sunnah["الضحى ☀️"];
-                document.getElementById('sdhuhr').checked = d.sunnah["سنة الظهر"];
-                document.getElementById('smaghrib').checked = d.sunnah["سنة المغرب"];
-                document.getElementById('sisha').checked = d.sunnah["سنة العشاء"];
+                if(d.sunnah) {
+                    document.getElementById('sfajr').checked = d.sunnah["سنة الفجر"] || false;
+                    document.getElementById('duha').checked = d.sunnah["الضحى ☀️"] || false;
+                    document.getElementById('sdhuhr').checked = d.sunnah["سنة الظهر"] || false;
+                    document.getElementById('smaghrib').checked = d.sunnah["سنة المغرب"] || false;
+                    document.getElementById('sisha').checked = d.sunnah["سنة العشاء"] || false;
+                }
                 const tr = document.getElementById('tr'+d.taraweeh); if(tr) { tr.checked = true; tr.dataset.wasChecked = 'true'; }
                 const wt = document.getElementById('wt'+d.witr); if(wt) { wt.checked = true; wt.dataset.wasChecked = 'true'; }
                 const qr = document.getElementById('q_'+d.quran); if(qr) { qr.checked = true; qr.dataset.wasChecked = 'true'; }
@@ -307,13 +305,22 @@
         }
 
         function updateLeaderboard() {
+            const today = getToday();
             db.ref('users').on('value', (snap) => {
                 const all = snap.val();
                 let ranks = [];
                 usersList.forEach(name => {
                     let total = 0;
-                    if(all && all[name] && all[name].days) Object.values(all[name].days).forEach(day => total += calculatePoints(day));
+                    let todayPts = 0;
+                    if(all && all[name] && all[name].days) {
+                        Object.keys(all[name].days).forEach(date => {
+                            const pts = calculatePoints(all[name].days[date]);
+                            total += pts;
+                            if(date === today) todayPts = pts;
+                        });
+                    }
                     ranks.push({ name, total });
+                    if(name === currentUser) document.getElementById('daily-pts').innerText = todayPts;
                 });
                 ranks.sort((a, b) => b.total - a.total);
                 document.getElementById('ranks-list').innerHTML = ranks.map((r, i) => `
@@ -329,7 +336,7 @@
                 const days = snap.val();
                 document.getElementById('modal-user-title').innerText = "إنجازات " + name;
                 let html = "";
-                if(!days) html = "<p style='padding:20px'>لا يوجد بيانات.</p>";
+                if(!days) html = "<p style='padding:20px'>لا يوجد بيانات مسجلة لهذا المستخدم.</p>";
                 else {
                     const qNames = { "none":"لم يقرأ", "10p":"10 صفحات", "1j":"جزء", "30p":"30 صفحة", "2j":"جزئين", "50p":"50 صفحة", "3j":"3 أجزاء" };
                     Object.keys(days).sort().reverse().forEach(date => {
@@ -337,22 +344,15 @@
                         html += `
                         <div class="day-section">
                             <div class="day-title">${getRamadanDate(date)}</div>
-                            
                             <div class="category-title">| الفرائض</div>
                             ${prayerOrder.map(p => `<div class="list-row"><span>${d.prayers && d.prayers[p]?'✅':'❌'}</span> <span>${p}</span></div>`).join('')}
-
                             <div class="category-title">| السنن والضحى</div>
                             ${sunnahOrder.map(s => `<div class="list-row"><span>${d.sunnah && d.sunnah[s]?'✅':'❌'}</span> <span>${s}</span></div>`).join('')}
-
                             <div class="category-title">| القيام والقرآن</div>
                             <div class="list-row"><span>${d.taraweeh || 0} ركعة</span> <span>التراويح</span> </div>
                             <div class="list-row"><span>${d.witr || 0} ركعة</span> <span>الوتر</span> </div>
                             <div class="list-row"><span>${qNames[d.quran] || 'لم يقرأ'}</span> <span>القرآن</span> </div>
-                            
-                            <div class="list-row total-row">
-                                <span style="color:var(--gold)">${calculatePoints(d)} نقطة</span>
-                                <span>إجمالي اليوم</span>
-                            </div>
+                            <div class="list-row total-row"><span style="color:var(--gold)">${calculatePoints(d)} نقطة</span><span>إجمالي اليوم</span></div>
                         </div>`;
                     });
                 }
@@ -365,5 +365,4 @@
         window.onload = () => { initOptions(); if(currentUser) showPage('main-menu'); };
     </script>
 </body>
-        </html>
-        
+</html>
