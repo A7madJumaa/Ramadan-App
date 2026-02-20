@@ -3,37 +3,379 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منافسة طاعات العائلة الملكية</title>
+    <title>منافسة رمضانية</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <style>
-        /* ألوان أفتح وأكثر إشراقاً */
         :root { 
-            --deep-oil: #2e4d3a; 
-            --gold: #d4af37; 
-            --cream: #fdfcf9; 
-            --soft-gold: rgba(212, 175, 55, 0.2); 
+            --primary-light: #f4f7f5; /* خلفية فاتحة ومريحة */
+            --accent-gold: #d4af37; 
+            --text-main: #2e4d3a; 
             --white: #ffffff;
+            --soft-border: rgba(212, 175, 55, 0.3);
         }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #f0f2f0; background-image: url("https://www.transparenttextures.com/patterns/islamic-art.png"); display: flex; justify-content: center; min-height: 100vh; margin: 0; color: var(--deep-oil); }
-        .container { background: var(--cream); padding: 1.5rem; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 95%; max-width: 480px; text-align: center; border: 2px solid var(--gold); margin: 20px 0; height: fit-content; }
-        .points-badge { background: var(--deep-oil); color: var(--gold); padding: 10px 20px; border-radius: 50px; font-weight: bold; display: inline-block; margin-bottom: 15px; font-size: 1.1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        button { width: 100%; padding: 14px; margin: 8px 0; cursor: pointer; border: 1px solid var(--gold); border-radius: 15px; background: var(--white); color: var(--deep-oil); font-weight: bold; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        button:hover { background: var(--gold); color: var(--white); }
-        .item-card { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: var(--white); margin-bottom: 10px; border-radius: 15px; border: 1px solid var(--soft-gold); cursor: pointer; }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background-color: var(--primary-light); 
+            background-image: url("https://www.transparenttextures.com/patterns/islamic-art.png"); 
+            display: flex; 
+            justify-content: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            color: var(--text-main); 
+        }
+
+        .container { 
+            background: var(--white); 
+            padding: 2rem; 
+            border-radius: 30px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+            width: 95%; 
+            max-width: 480px; 
+            text-align: center; 
+            border: 1px solid var(--soft-border); 
+            margin: 20px 0; 
+            height: fit-content; 
+        }
+
+        .points-badge { 
+            background: var(--text-main); 
+            color: var(--accent-gold); 
+            padding: 12px 25px; 
+            border-radius: 50px; 
+            font-weight: bold; 
+            display: inline-block; 
+            margin-bottom: 20px; 
+            font-size: 1.1rem;
+            box-shadow: 0 4px 12px rgba(46, 77, 58, 0.2);
+        }
+
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            margin: 8px 0; 
+            cursor: pointer; 
+            border: 1px solid var(--accent-gold); 
+            border-radius: 15px; 
+            background: var(--white); 
+            color: var(--text-main); 
+            font-weight: 600; 
+            transition: all 0.3s ease; 
+        }
+
+        button:hover { 
+            background: var(--accent-gold); 
+            color: var(--white); 
+            transform: translateY(-2px);
+        }
+
+        .item-card { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 15px 20px; 
+            background: var(--primary-light); 
+            margin-bottom: 12px; 
+            border-radius: 15px; 
+            border: 1px solid var(--soft-border); 
+            cursor: pointer; 
+        }
+
         .hidden { display: none; }
-        .leaderboard { background: var(--white); border-radius: 20px; padding: 15px; margin-top: 15px; border: 1px solid var(--gold); }
-        .rank-item { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #f0f0f0; cursor: pointer; border-radius: 12px; transition: 0.2s; }
-        .rank-item:hover { background: var(--soft-gold); }
+
+        .leaderboard { 
+            background: var(--white); 
+            border-radius: 20px; 
+            padding: 10px; 
+            margin-top: 15px; 
+            border: 1px solid var(--soft-border); 
+        }
+
+        .rank-item { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 15px; 
+            border-bottom: 1px solid #f0f0f0; 
+            cursor: pointer; 
+            border-radius: 12px; 
+            transition: background 0.2s;
+        }
+
+        .rank-item:hover { background: #fafafa; }
+
+        /* الأرشيف */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            z-index: 100; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.5); 
+            justify-content: center; 
+            align-items: center; 
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content { 
+            background: var(--white); 
+            padding: 25px; 
+            border-radius: 25px; 
+            width: 90%; 
+            max-width: 420px; 
+            max-height: 80vh; 
+            overflow-y: auto; 
+            border: 2px solid var(--accent-gold); 
+            text-align: right; 
+        }
+
+        .history-card { 
+            background: var(--primary-light); 
+            border: 1px solid var(--soft-border); 
+            border-radius: 18px; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+        }
+
+        .tag { 
+            background: var(--white); 
+            padding: 4px 10px; 
+            border-radius: 8px; 
+            font-size: 0.85rem; 
+            margin: 3px; 
+            display: inline-block; 
+            border: 1px solid #eee;
+        }
+
+        .tag.done { border-color: var(--accent-gold); color: #b8860b; }
+
+        .back-btn { 
+            background: #6c757d; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 12px; 
+            margin-top: 10px; 
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen" class="container">
+        <h2>🌙 منافسة العائلة</h2>
+        <input type="text" id="username-input" placeholder="اكتب اسمك للمشاركة..." style="width:80%; padding:15px; border-radius:12px; border:1px solid #ddd; text-align:center;">
+        <button onclick="login()" style="background: var(--text-main); color: var(--accent-gold); margin-top: 15px;">دخول</button>
+    </div>
+
+    <div id="main-menu" class="container hidden">
+        <div class="points-badge">نقاطك اليوم: <span id="daily-pts">0</span> 🏆</div>
+        <h3 id="welcome-msg"></h3>
+        <div class="leaderboard">
+            <h4>📈 جدول الترتيب العام</h4>
+            <div id="ranks-list">جاري المزامنة...</div>
+        </div>
+        <div style="margin-top: 20px;">
+            <button onclick="showPage('prayer-screen')">🕌 الصلوات</button>
+            <button onclick="showPage('sunnah-screen')">✨ السنن والضحى</button>
+            <button onclick="showPage('taraweeh-screen')">🌙 التراويح</button>
+            <button onclick="showPage('quran-screen')">📖 ورد القرآن</button>
+            <button class="back-btn" onclick="logout()" style="width:100%; background: #f8f9fa; color: #666;">تبديل الحساب</button>
+        </div>
+    </div>
+
+    <div id="prayer-screen" class="container hidden">
+        <button class="back-btn" onclick="showPage('main-menu')">↩ عودة</button>
+        <h3>الصلوات المفروضة</h3>
+        <div class="item-card"><span>الفجر</span> <input type="checkbox" id="fajr" onchange="saveToCloud()"></div>
+        <div class="item-card"><span>الظهر</span> <input type="checkbox" id="dhuhr" onchange="saveToCloud()"></div>
+        <div class="item-card"><span>العصر</span> <input type="checkbox" id="asr" onchange="saveToCloud()"></div>
+        <div class="item-card"><span>المغرب</span> <input type="checkbox" id="maghrib" onchange="saveToCloud()"></div>
+        <div class="item-card"><span>العشاء</span> <input type="checkbox" id="isha" onchange="saveToCloud()"></div>
+    </div>
+
+    <div id="sunnah-screen" class="container hidden">
+        <button class="back-btn" onclick="showPage('main-menu')">↩ عودة</button>
+        <h3>السنن</h3>
+        <div class="item-card"><span>سنة الفجر</span> <input type="checkbox" id="sfajr" onchange="saveToCloud()"></div>
+        <div class="item-card"><span>الضحى ☀️</span> <input type="checkbox" id="duha" onchange="saveToCloud()"></div>
+        <div class="item-card"><span>سنة الظهر</span> <input type="checkbox" id="sdhuhr" onchange="saveToCloud()"></div>
+        <div class="item-card"><span>سنة المغرب</span> <input type="checkbox" id="smaghrib" onchange="saveToCloud()"></div>
+        <div class="item-card"><span>سنة العشاء</span> <input type="checkbox" id="sisha" onchange="saveToCloud()"></div>
+    </div>
+
+    <div id="taraweeh-screen" class="container hidden">
+        <button class="back-btn" onclick="showPage('main-menu')">↩ عودة</button>
+        <h3>التراويح</h3>
+        <div id="taraweeh-list"></div>
+    </div>
+
+    <div id="quran-screen" class="container hidden">
+        <button class="back-btn" onclick="showPage('main-menu')">↩ عودة</button>
+        <h3>ورد القرآن</h3>
+        <div id="quran-list"></div>
+    </div>
+
+    <div id="archive-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-user-title"></h3>
+            <div id="modal-history-body"></div>
+            <button onclick="closeModal()" class="back-btn" style="width: 100%;">إغلاق</button>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpwmA1_4zU7flfgXopTZPTaJOAjntAH-w",
+            authDomain: "ramadan-tracker-c23a1.firebaseapp.com",
+            databaseURL: "https://ramadan-tracker-c23a1-default-rtdb.firebaseio.com",
+            projectId: "ramadan-tracker-c23a1",
+            storageBucket: "ramadan-tracker-c23a1.firebasestorage.app",
+            messagingSenderId: "760493486182",
+            appId: "1:760493486182:web:a8c7c1013a5a0d115b7da7",
+            measurementId: "G-LQM6D1M0ZS"
+        };
         
-        /* تصميم الأرشيف (المودال) */
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .modal-content { background: var(--cream); padding: 25px; border-radius: 30px; width: 90%; max-width: 420px; max-height: 80vh; overflow-y: auto; border: 2px solid var(--gold); text-align: right; position: relative; }
-        .history-card { background: var(--white); border: 1px solid var(--gold); border-radius: 20px; padding: 18px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .tag { background: #f0f4f1; color: var(--deep-oil); padding: 4px 10px; border-radius: 8px; font-size: 0.85rem; margin: 3px; display: inline-block; border: 1px solid #e0e0e0; }
-        .tag.check { border-color: var(--gold); background: var(--soft-gold); }
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const usersList = ["أحمد", "عمر", "حلا", "يونس", "مؤيد"];
+        let currentUser = localStorage.getItem('familyUser') || "";
+        const today = new Date().toLocaleDateString('en-CA');
+
+        function initOptions() {
+            const trList = [8, 10, 12, 14, 16, 18, 20];
+            document.getElementById('taraweeh-list').innerHTML = trList.map(n => `
+                <div class="item-card">
+                    <span>${n} ركعة</span> <input type="radio" name="tr" value="${n}" id="tr${n}" onchange="saveToCloud()">
+                </div>`).join('');
+
+            const qList = [ {v:'10p', n:'10 صفحات'}, {v:'1j', n:'جزء'}, {v:'30p', n:'30 صفحة'}, {v:'2j', n:'جزئين'}, {v:'50p', n:'50 صفحة'}, {v:'3j', n:'3 أجزاء'} ];
+            document.getElementById('quran-list').innerHTML = qList.map(q => `
+                <div class="item-card">
+                    <span>${q.n}</span> <input type="radio" name="q" value="${q.v}" id="q_${q.v}" onchange="saveToCloud()">
+                </div>`).join('');
+        }
+
+        function login() {
+            const name = document.getElementById('username-input').value.trim();
+            if (usersList.includes(name)) {
+                currentUser = name;
+                localStorage.setItem('familyUser', name);
+                showPage('main-menu');
+            } else { alert("عذراً، الاسم غير موجود."); }
+        }
+
+        function logout() { localStorage.removeItem('familyUser'); location.reload(); }
+
+        function showPage(id) {
+            document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            if (id === 'main-menu') { updateLeaderboard(); loadFromCloud(); }
+        }
+
+        function calculatePoints(d) {
+            if(!d) return 0;
+            const qPts = { "none":0, "10p":20, "1j":50, "30p":70, "2j":100, "50p":130, "3j":200 };
+            let s = 0;
+            if(d.prayers) Object.values(d.prayers).forEach(v => v && (s += 10));
+            if(d.sunnah) Object.values(d.sunnah).forEach(v => v && (s += 5));
+            s += (parseInt(d.taraweeh) || 0) * 3;
+            s += qPts[d.quran] || 0;
+            return s;
+        }
+
+        function saveToCloud() {
+            if(!currentUser) return;
+            const data = {
+                prayers: { "الفجر": document.getElementById('fajr').checked, "الظهر": document.getElementById('dhuhr').checked, "العصر": document.getElementById('asr').checked, "المغرب": document.getElementById('maghrib').checked, "العشاء": document.getElementById('isha').checked },
+                sunnah: { "سنة الفجر": document.getElementById('sfajr').checked, "الضحى": document.getElementById('duha').checked, "سنة الظهر": document.getElementById('sdhuhr').checked, "سنة المغرب": document.getElementById('smaghrib').checked, "سنة العشاء": document.getElementById('sisha').checked },
+                taraweeh: document.querySelector('input[name="tr"]:checked')?.value || 0,
+                quran: document.querySelector('input[name="q"]:checked')?.value || "none"
+            };
+            db.ref('users/' + currentUser + '/days/' + today).set(data);
+            document.getElementById('daily-pts').innerText = calculatePoints(data);
+        }
+
+        function loadFromCloud() {
+            db.ref('users/' + currentUser + '/days/' + today).once('value', (snap) => {
+                const d = snap.val(); if(!d) return;
+                document.getElementById('fajr').checked = d.prayers["الفجر"];
+                document.getElementById('dhuhr').checked = d.prayers["الظهر"];
+                document.getElementById('asr').checked = d.prayers["العصر"];
+                document.getElementById('maghrib').checked = d.prayers["المغرب"];
+                document.getElementById('isha').checked = d.prayers["العشاء"];
+                document.getElementById('sfajr').checked = d.sunnah["سنة الفجر"];
+                document.getElementById('duha').checked = d.sunnah["الضحى"];
+                document.getElementById('sdhuhr').checked = d.sunnah["سنة الظهر"];
+                document.getElementById('smaghrib').checked = d.sunnah["سنة المغرب"];
+                document.getElementById('sisha').checked = d.sunnah["سنة العشاء"];
+                if(d.taraweeh) { const el = document.getElementById('tr'+d.taraweeh); if(el) el.checked = true; }
+                if(d.quran) { const el = document.getElementById('q_'+d.quran); if(el) el.checked = true; }
+                document.getElementById('daily-pts').innerText = calculatePoints(d);
+            });
+        }
+
+        function updateLeaderboard() {
+            db.ref('users').on('value', (snap) => {
+                const all = snap.val();
+                let ranks = [];
+                usersList.forEach(name => {
+                    let total = 0;
+                    if(all && all[name] && all[name].days) {
+                        Object.values(all[name].days).forEach(day => total += calculatePoints(day));
+                    }
+                    ranks.push({ name, total });
+                });
+                ranks.sort((a, b) => b.total - a.total);
+                document.getElementById('ranks-list').innerHTML = ranks.map((r, i) => `
+                    <div class="rank-item" onclick="viewArchive('${r.name}')">
+                        <span>${i+1}. ${r.name}</span>
+                        <span style="font-weight:bold; color:var(--accent-gold);">${r.total} ن</span>
+                    </div>`).join('');
+                document.getElementById('welcome-msg').innerText = "طابت طاعتك يا " + currentUser;
+            });
+        }
+
+        function viewArchive(name) {
+            db.ref('users/' + name + '/days').once('value', (snap) => {
+                const days = snap.val();
+                document.getElementById('modal-user-title').innerText = "سجل " + name;
+                let html = "";
+                if(!days) html = "<p>لا يوجد سجل بعد لهذا المستخدم.</p>";
+                else {
+                    const qNames = { "none":"-", "10p":"10 ص", "1j":"جزء", "30p":"30 ص", "2j":"جزءين", "50p":"50 ص", "3j":"3 أجزاء" };
+                    Object.keys(days).sort().reverse().forEach(date => {
+                        const d = days[date];
+                        html += `
+                        <div class="history-card">
+                            <div style="border-bottom:1px solid #ddd; margin-bottom:10px; padding-bottom:5px;">
+                                <b>📅 ${date}</b> <span style="float:left; color:var(--accent-gold)">${calculatePoints(d)} ن</span>
+                            </div>
+                            <div>
+                                ${Object.keys(d.prayers).map(p => `<span class="tag ${d.prayers[p]?'done':''}"> ${d.prayers[p]?'✅':'❌'} ${p}</span>`).join('')}
+                            </div>
+                            <div style="margin-top:10px;">
+                                <span class="tag">تراويح: ${d.taraweeh || 0}</span>
+                                <span class="tag">قرآن: ${qNames[d.quran] || '-'}</span>
+                            </div>
+                        </div>`;
+                    });
+                }
+                document.getElementById('modal-history-body').innerHTML = html;
+                document.getElementById('archive-modal').style.display = "flex";
+            });
+        }
+
+        function closeModal() { document.getElementById('archive-modal').style.display = "none"; }
+        window.onload = () => { initOptions(); if(currentUser) showPage('main-menu'); };
+    </script>
+</body>
+</html>
         .back-btn { background: #8e8e8e; color: white; border: none; width: auto; padding: 10px 25px; border-radius: 12px; margin-top: 15px; }
     </style>
 </head>
