@@ -242,12 +242,12 @@
 
         function calculatePoints(d) {
             if(!d) return 0;
-            const qPts = { "none":0, "10p":20, "1j":50, "30p":70, "2j":100, "50p":130, "3j":200 };
+            const qPts = { "none":0, "10p":1, "1j":2, "30p":3, "2j":4, "50p":5, "3j":6 };
             let s = 0;
-            if(d.prayers) Object.values(d.prayers).forEach(v => v && (s += 10));
-            if(d.sunnah) Object.values(d.sunnah).forEach(v => v && (s += 5));
-            s += (parseInt(d.taraweeh) || 0) * 3;
-            s += (parseInt(d.witr) || 0) * 3; 
+            if(d.prayers) Object.values(d.prayers).forEach(v => v && (s += 2));
+            if(d.sunnah) Object.values(d.sunnah).forEach(v => v && (s += 2));
+            s += (parseInt(d.taraweeh) || 0) * 1;
+            s += (parseInt(d.witr) || 0) * 1; 
             s += qPts[d.quran] || 0;
             return s;
         }
