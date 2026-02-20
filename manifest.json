@@ -1,0 +1,25 @@
+{
+  "short_name": "منافسة رمضان",
+  "name": "منافسة رمضان",
+  "description": "منافسة رمضان",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512×512",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#1b3022",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#1b3022",
+  "orientation": "portrait"
+}
