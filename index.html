@@ -11,96 +11,58 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
     <style>
-    * {
-        -webkit-tap-highlight-color: transparent;
-        outline: none !important;
-        -webkit-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
+    * { -webkit-tap-highlight-color: transparent; outline: none !important; -webkit-user-select: none; user-select: none; }
+    :root { --deep-oil: #1b3022; --gold: #c5a059; --cream: #f9f7f2; --white: #ffffff; --soft-gold: rgba(197, 160, 89, 0.1); }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--deep-oil); display: flex; justify-content: center; min-height: 100vh; margin: 0; color: var(--deep-oil); }
+    .container { background: var(--cream); padding: 1.5rem; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 95%; max-width: 480px; text-align: center; border: 2px solid var(--gold); margin: 20px 0; position: relative; height: fit-content; }
+    .logout-mini { position: absolute; top: 15px; left: 15px; background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 5px 10px; font-size: 0.7rem; border-radius: 8px; cursor: pointer; z-index: 10; width: auto !important; }
+    .points-badge { background: var(--deep-oil); color: var(--gold); padding: 10px 20px; border-radius: 50px; font-weight: bold; display: inline-block; margin-bottom: 15px; margin-top: 40px; }
+    button { width: 100%; padding: 14px; margin: 8px 0; cursor: pointer; border: 1px solid var(--gold); border-radius: 15px; background: var(--deep-oil); color: var(--gold); font-weight: bold; }
+    .item-card { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; background: var(--white); margin-bottom: 10px; border-radius: 15px; border: 1px solid var(--soft-gold); }
+    .hidden { display: none; }
+    .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
+    .modal-content { background: var(--cream); padding: 0; border-radius: 25px; width: 92%; max-width: 420px; max-height: 85vh; overflow-y: auto; border: 2px solid var(--gold); }
+    .archive-header { background: var(--cream); padding: 20px; text-align: center; border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 5; }
+    .day-section { padding: 15px; border-bottom: 8px solid var(--gold); }
+    
+    /* التعديل المطلوب: تنسيق التاريخ وزر التعديل بجانبه */
+    .day-header-flex { 
+        display: flex; 
+        align-items: stretch; /* لجعلهم بنفس الارتفاع */
+        justify-content: center; 
+        gap: 10px; 
+        margin-bottom: 10px; 
     }
-        
-        :root { 
-            --deep-oil: #1b3022; 
-            --gold: #c5a059; 
-            --cream: #f9f7f2; 
-            --white: #ffffff;
-            --soft-gold: rgba(197, 160, 89, 0.1);
-            --red-x: #e74c3c;
-            --green-check: #27ae60;
-        }
+    .day-title { 
+        background: var(--deep-oil); 
+        color: var(--gold); 
+        padding: 8px 20px; 
+        border-radius: 12px; 
+        font-weight: bold; 
+        font-size: 0.9rem; 
+        display: flex; 
+        align-items: center;
+        flex: 2; /* تأخذ مساحة أكبر */
+    }
+    .edit-btn { 
+        background: var(--gold); 
+        color: var(--deep-oil); 
+        border: none; 
+        padding: 0 12px; 
+        border-radius: 12px; 
+        font-size: 0.75rem; 
+        cursor: pointer; 
+        font-weight: bold; 
+        flex: 1; /* أقصر من التاريخ */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-        body { 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
-            background-color: var(--deep-oil); 
-            display: flex; 
-            justify-content: center; 
-            min-height: 100vh; 
-            margin: 0; 
-            color: var(--deep-oil); 
-        }
-
-        .container { 
-            background: var(--cream); 
-            padding: 1.5rem; 
-            border-radius: 30px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3); 
-            width: 95%; 
-            max-width: 480px; 
-            text-align: center; 
-            border: 2px solid var(--gold); 
-            margin: 20px 0; 
-            position: relative;
-            height: fit-content;
-        }
-
-        .logout-mini {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            background: transparent;
-            border: 1px solid var(--gold);
-            color: var(--gold);
-            padding: 5px 10px;
-            font-size: 0.7rem;
-            border-radius: 8px;
-            cursor: pointer;
-            width: auto !important;
-            display: inline-block;
-        }
-
-        .points-badge { 
-            background: var(--deep-oil); 
-            color: var(--gold); 
-            padding: 10px 20px; 
-            border-radius: 50px; 
-            font-weight: bold; 
-            display: inline-block; 
-            margin-bottom: 15px; 
-            margin-top: 20px;
-        }
-
-        button { 
-            width: 100%; padding: 14px; margin: 8px 0; cursor: pointer; 
-            border: 1px solid var(--gold); border-radius: 15px; 
-            background: var(--deep-oil); color: var(--gold); font-weight: bold; 
-        }
-
-        .item-card { 
-            display: flex; align-items: center; justify-content: space-between; 
-            padding: 12px 18px; background: var(--white); margin-bottom: 10px; 
-            border-radius: 15px; border: 1px solid var(--soft-gold); 
-        }
-
-        .hidden { display: none; }
-
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
-        .modal-content { background: var(--cream); padding: 0; border-radius: 25px; width: 92%; max-width: 420px; max-height: 85vh; overflow-y: auto; border: 2px solid var(--gold); }
-        .archive-header { background: var(--cream); padding: 20px; text-align: center; border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 5; }
-        .day-section { padding: 15px; border-bottom: 8px solid var(--gold); }
-        .day-title { text-align: center; font-weight: bold; background: var(--deep-oil); color: var(--gold); padding: 5px; border-radius: 10px; }
-        .category-title { color: var(--gold); font-weight: bold; padding: 8px 15px 5px; text-align: right; border-right: 4px solid var(--gold); margin-top: 10px; }
-        .list-row { display: flex; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid #eee; }
-        .total-row { background: var(--white); border: 1px dashed var(--gold); font-weight: bold; margin-top: 15px; border-radius: 10px; }
+    .category-title { color: var(--gold); font-weight: bold; padding: 8px 15px 5px; text-align: right; border-right: 4px solid var(--gold); margin-top: 10px; }
+    .list-row { display: flex; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid #eee; }
+    .total-row { background: var(--white); border: 1px dashed var(--gold); font-weight: bold; margin-top: 15px; border-radius: 10px; }
+    .editing-banner { background: #e67e22; color: white; padding: 8px; font-size: 0.75rem; font-weight: bold; margin-top: 40px; margin-bottom: 10px; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -113,7 +75,8 @@
 
     <div id="main-menu" class="container hidden">
         <button class="logout-mini" onclick="logout()">تبديل</button>
-        <div class="points-badge">نقاطك اليوم: <span id="daily-pts">0</span> 🏆</div>
+        <div id="edit-indicator" class="hidden editing-banner">⚠️ وضع التعديل: أنت تغير بيانات يوم سابق</div>
+        <div class="points-badge">نقاط <span id="viewing-date-label">اليوم</span>: <span id="daily-pts">0</span> 🏆</div>
         <h3 id="welcome-msg"></h3>
         <div style="background: white; border-radius: 20px; padding: 10px; border: 1px solid var(--gold);">
             <h4 style="margin:5px">📊 الترتيب العام</h4>
@@ -125,6 +88,7 @@
             <button onclick="showPage('taraweeh-screen')">🌙 التراويح</button>
             <button onclick="showPage('witr-screen')">🌙 صلاة الوتر</button>
             <button onclick="showPage('quran-screen')">📖 ورد القرآن</button>
+            <button id="back-to-today" class="hidden" style="background:#27ae60; color:white; font-size: 0.9rem;" onclick="resetToToday()">✅ العودة لليوم الحالي</button>
         </div>
     </div>
 
@@ -190,9 +154,9 @@
         const db = firebase.database();
         const usersList = ["احمد", "عمر", "حلا", "يونس", "مؤيد","جمال"];
         let currentUser = localStorage.getItem('familyUser') || "";
+        let selectedDate = ""; 
         
-        // جلب التاريخ المحلي الصحيح
-        const getToday = () => {
+        const getRealToday = () => {
             const now = new Date();
             const offset = now.getTimezoneOffset() * 60000;
             return new Date(now - offset).toISOString().split('T')[0];
@@ -214,21 +178,18 @@
             const trList = [8, 10, 12, 14, 16, 18, 20];
             document.getElementById('taraweeh-list').innerHTML = trList.map(n => `
                 <div class="item-card"><span>${n} ركعة</span> <input type="radio" name="tr" value="${n}" id="tr${n}" onclick="handleRadioClick(this)"></div>`).join('');
-            
             const witrList = [1, 3, 5, 7, 9, 11];
             document.getElementById('witr-list').innerHTML = witrList.map(n => `
                 <div class="item-card"><span>${n} ركعة</span> <input type="radio" name="wt" value="${n}" id="wt${n}" onclick="handleRadioClick(this)"></div>`).join('');
-
             const qList = [ {v:'10p', n:'10 صفحات'}, {v:'1j', n:'جزء'}, {v:'30p', n:'30 صفحة'}, {v:'2j', n:'جزئين'}, {v:'50p', n:'50 صفحة'}, {v:'3j', n:'3 أجزاء'} ];
             document.getElementById('quran-list').innerHTML = qList.map(q => `
                 <div class="item-card"><span>${q.n}</span> <input type="radio" name="q" value="${q.v}" id="q_${q.v}" onclick="handleRadioClick(this)"></div>`).join('');
+            if(!selectedDate) selectedDate = getRealToday();
         }
 
         function handleRadioClick(radio) {
-            if (radio.dataset.wasChecked === 'true') {
-                radio.checked = false;
-                radio.dataset.wasChecked = 'false';
-            } else {
+            if (radio.dataset.wasChecked === 'true') { radio.checked = false; radio.dataset.wasChecked = 'false'; }
+            else { 
                 const name = radio.name;
                 document.querySelectorAll(`input[name="${name}"]`).forEach(r => r.dataset.wasChecked = 'false');
                 radio.dataset.wasChecked = 'true';
@@ -238,7 +199,7 @@
 
         function login() {
             const name = document.getElementById('username-input').value.trim();
-            if (usersList.includes(name)) { currentUser = name; localStorage.setItem('familyUser', name); showPage('main-menu'); }
+            if (usersList.includes(name)) { currentUser = name; localStorage.setItem('familyUser', name); selectedDate = getRealToday(); showPage('main-menu'); }
             else { alert("الاسم غير موجود"); }
         }
 
@@ -247,7 +208,36 @@
         function showPage(id) {
             document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
-            if (id === 'main-menu') { updateLeaderboard(); loadFromCloud(); }
+            if (id === 'main-menu') { 
+                updateLeaderboard(); loadFromCloud(); checkAndCreateTodayForAll();
+                if(selectedDate !== getRealToday()){
+                    document.getElementById('edit-indicator').classList.remove('hidden');
+                    document.getElementById('back-to-today').classList.remove('hidden');
+                    document.getElementById('viewing-date-label').innerText = selectedDate;
+                } else {
+                    document.getElementById('edit-indicator').classList.add('hidden');
+                    document.getElementById('back-to-today').classList.add('hidden');
+                    document.getElementById('viewing-date-label').innerText = "اليوم";
+                }
+            }
+        }
+
+        function resetToToday() { selectedDate = getRealToday(); showPage('main-menu'); }
+
+        function checkAndCreateTodayForAll() {
+            const today = getRealToday();
+            usersList.forEach(user => {
+                db.ref('users/' + user + '/days/' + today).once('value', (snap) => {
+                    if (!snap.exists()) {
+                        const emptyData = {
+                            prayers: { "الفجر": false, "الظهر": false, "العصر": false, "المغرب": false, "العشاء": false },
+                            sunnah: { "سنة الفجر": false, "الضحى ☀️": false, "سنة الظهر": false, "سنة المغرب": false, "سنة العشاء": false },
+                            taraweeh: 0, witr: 0, quran: "none"
+                        };
+                        db.ref('users/' + user + '/days/' + today).set(emptyData);
+                    }
+                });
+            });
         }
 
         function calculatePoints(d) {
@@ -263,7 +253,6 @@
         }
 
         function saveToCloud() {
-            const today = getToday(); 
             const data = {
                 prayers: { "الفجر": document.getElementById('fajr').checked, "الظهر": document.getElementById('dhuhr').checked, "العصر": document.getElementById('asr').checked, "المغرب": document.getElementById('maghrib').checked, "العشاء": document.getElementById('isha').checked },
                 sunnah: { "سنة الفجر": document.getElementById('sfajr').checked, "الضحى ☀️": document.getElementById('duha').checked, "سنة الظهر": document.getElementById('sdhuhr').checked, "سنة المغرب": document.getElementById('smaghrib').checked, "سنة العشاء": document.getElementById('sisha').checked },
@@ -271,18 +260,15 @@
                 witr: document.querySelector('input[name="wt"]:checked')?.value || 0,
                 quran: document.querySelector('input[name="q"]:checked')?.value || "none"
             };
-            db.ref('users/' + currentUser + '/days/' + today).set(data);
-            // لا حاجة لتحديث النقاط يدوياً هنا، الـ listener في الترتيب سيقوم بذلك
+            db.ref('users/' + currentUser + '/days/' + selectedDate).set(data);
         }
 
         function loadFromCloud() {
-            const today = getToday(); 
-            db.ref('users/' + currentUser + '/days/' + today).once('value', (snap) => {
+            db.ref('users/' + currentUser + '/days/' + selectedDate).once('value', (snap) => {
                 const d = snap.val(); 
                 document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
                 document.querySelectorAll('input[type="radio"]').forEach(r => {r.checked = false; r.dataset.wasChecked = 'false';});
                 if(!d) { document.getElementById('daily-pts').innerText = "0"; return; }
-                
                 if(d.prayers) {
                     document.getElementById('fajr').checked = d.prayers["الفجر"] || false;
                     document.getElementById('dhuhr').checked = d.prayers["الظهر"] || false;
@@ -305,22 +291,20 @@
         }
 
         function updateLeaderboard() {
-            const today = getToday();
             db.ref('users').on('value', (snap) => {
                 const all = snap.val();
                 let ranks = [];
                 usersList.forEach(name => {
-                    let total = 0;
-                    let todayPts = 0;
+                    let total = 0; let dayDisplayPts = 0;
                     if(all && all[name] && all[name].days) {
                         Object.keys(all[name].days).forEach(date => {
                             const pts = calculatePoints(all[name].days[date]);
                             total += pts;
-                            if(date === today) todayPts = pts;
+                            if(date === selectedDate) dayDisplayPts = pts;
                         });
                     }
                     ranks.push({ name, total });
-                    if(name === currentUser) document.getElementById('daily-pts').innerText = todayPts;
+                    if(name === currentUser) document.getElementById('daily-pts').innerText = dayDisplayPts;
                 });
                 ranks.sort((a, b) => b.total - a.total);
                 document.getElementById('ranks-list').innerHTML = ranks.map((r, i) => `
@@ -331,38 +315,18 @@
             });
         }
 
+        function startEditing(date) { selectedDate = date; closeModal(); showPage('main-menu'); }
+
         function viewArchive(name) {
             db.ref('users/' + name + '/days').once('value', (snap) => {
                 const days = snap.val();
                 document.getElementById('modal-user-title').innerText = "إنجازات " + name;
                 let html = "";
-                if(!days) html = "<p style='padding:20px'>لا يوجد بيانات مسجلة لهذا المستخدم.</p>";
+                if(!days) html = "<p style='padding:20px'>لا يوجد سجلات.</p>";
                 else {
                     const qNames = { "none":"لم يقرأ", "10p":"10 صفحات", "1j":"جزء", "30p":"30 صفحة", "2j":"جزئين", "50p":"50 صفحة", "3j":"3 أجزاء" };
+                    const todayStr = getRealToday();
                     Object.keys(days).sort().reverse().forEach(date => {
                         const d = days[date];
-                        html += `
-                        <div class="day-section">
-                            <div class="day-title">${getRamadanDate(date)}</div>
-                            <div class="category-title">| الفرائض</div>
-                            ${prayerOrder.map(p => `<div class="list-row"><span>${d.prayers && d.prayers[p]?'✅':'❌'}</span> <span>${p}</span></div>`).join('')}
-                            <div class="category-title">| السنن والضحى</div>
-                            ${sunnahOrder.map(s => `<div class="list-row"><span>${d.sunnah && d.sunnah[s]?'✅':'❌'}</span> <span>${s}</span></div>`).join('')}
-                            <div class="category-title">| القيام والقرآن</div>
-                            <div class="list-row"><span>${d.taraweeh || 0} ركعة</span> <span>التراويح</span> </div>
-                            <div class="list-row"><span>${d.witr || 0} ركعة</span> <span>الوتر</span> </div>
-                            <div class="list-row"><span>${qNames[d.quran] || 'لم يقرأ'}</span> <span>القرآن</span> </div>
-                            <div class="list-row total-row"><span style="color:var(--gold)">${calculatePoints(d)} نقطة</span><span>إجمالي اليوم</span></div>
-                        </div>`;
-                    });
-                }
-                document.getElementById('modal-history-body').innerHTML = html;
-                document.getElementById('archive-modal').style.display = "flex";
-            });
-        }
-
-        function closeModal() { document.getElementById('archive-modal').style.display = "none"; }
-        window.onload = () => { initOptions(); if(currentUser) showPage('main-menu'); };
-    </script>
-</body>
-</html>
+                        const canEdit = (name === currentUser && date !== todayStr);
+                       
