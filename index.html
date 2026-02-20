@@ -43,7 +43,6 @@
             height: fit-content;
         }
 
-        /* إصلاح حجم زر تبديل الحساب */
         .logout-mini {
             position: absolute;
             top: 15px;
@@ -55,9 +54,8 @@
             font-size: 0.7rem;
             border-radius: 8px;
             cursor: pointer;
-            width: auto !important; /* لضمان عدم التمدد */
+            width: auto !important;
             display: inline-block;
-            line-height: 1;
         }
 
         .points-badge { 
@@ -72,45 +70,28 @@
         }
 
         button { 
-            width: 100%; 
-            padding: 14px; 
-            margin: 8px 0; 
-            cursor: pointer; 
-            border: 1px solid var(--gold); 
-            border-radius: 15px; 
-            background: var(--deep-oil); 
-            color: var(--gold); 
-            font-weight: bold; 
-            transition: 0.3s; 
+            width: 100%; padding: 14px; margin: 8px 0; cursor: pointer; 
+            border: 1px solid var(--gold); border-radius: 15px; 
+            background: var(--deep-oil); color: var(--gold); font-weight: bold; 
         }
 
-        button:hover { background: var(--gold); color: var(--deep-oil); }
-
         .item-card { 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 12px 18px; 
-            background: var(--white); 
-            margin-bottom: 10px; 
-            border-radius: 15px; 
-            border: 1px solid var(--soft-gold); 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 12px 18px; background: var(--white); margin-bottom: 10px; 
+            border-radius: 15px; border: 1px solid var(--soft-gold); 
         }
 
         .hidden { display: none; }
 
+        /* مودال الأرشيف */
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
         .modal-content { background: var(--cream); padding: 0; border-radius: 25px; width: 92%; max-width: 420px; max-height: 85vh; overflow-y: auto; border: 2px solid var(--gold); }
-        
         .archive-header { background: var(--cream); padding: 20px; text-align: center; border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 5; }
         .day-section { padding: 15px; border-bottom: 8px solid var(--gold); }
-        .day-title { text-align: center; font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; background: var(--deep-oil); color: var(--gold); padding: 5px; border-radius: 10px; }
-        
-        .list-row { display: flex; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid #eee; align-items: center; }
-        .category-title { color: var(--gold); font-weight: bold; padding: 8px 15px 5px; text-align: right; font-size: 0.9rem; border-right: 4px solid var(--gold); margin-top: 10px; background: rgba(197, 160, 89, 0.05); }
-        
+        .day-title { text-align: center; font-weight: bold; background: var(--deep-oil); color: var(--gold); padding: 5px; border-radius: 10px; }
+        .category-title { color: var(--gold); font-weight: bold; padding: 8px 15px 5px; text-align: right; border-right: 4px solid var(--gold); margin-top: 10px; }
+        .list-row { display: flex; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid #eee; }
         .total-row { background: var(--white); border: 1px dashed var(--gold); font-weight: bold; margin-top: 15px; border-radius: 10px; }
-        .rank-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -189,22 +170,36 @@
             messagingSenderId: "760493486182",
             appId: "1:760493486182:web:a8c7c1013a5a0d115b7da7"
         };
-        
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const usersList = ["أحمد", "عمر", "حلا", "يونس", "مؤيد"];
         let currentUser = localStorage.getItem('familyUser') || "";
         const today = new Date().toLocaleDateString('en-CA');
 
+        // مصفوفات الترتيب الثابتة
+        const prayerOrder = ["الفجر", "الظهر", "العصر", "المغرب", "العشاء"];
+        const sunnahOrder = ["سنة الفجر", "الضحى ☀️", "سنة الظهر", "سنة المغرب", "سنة العشاء"];
+
         function initOptions() {
             const trList = [8, 10, 12, 14, 16, 18, 20];
             document.getElementById('taraweeh-list').innerHTML = trList.map(n => `
-                <div class="item-card"><span>${n} ركعة</span> <input type="radio" name="tr" value="${n}" id="tr${n}" onchange="saveToCloud()"></div>`).join('');
-            
-            // إضافة خيار 50 صفحة في الترتيب الصحيح
+                <div class="item-card"><span>${n} ركعة</span> <input type="radio" name="tr" value="${n}" id="tr${n}" onclick="handleRadioClick(this)"></div>`).join('');
             const qList = [ {v:'10p', n:'10 صفحات'}, {v:'1j', n:'جزء'}, {v:'30p', n:'30 صفحة'}, {v:'2j', n:'جزئين'}, {v:'50p', n:'50 صفحة'}, {v:'3j', n:'3 أجزاء'} ];
             document.getElementById('quran-list').innerHTML = qList.map(q => `
-                <div class="item-card"><span>${q.n}</span> <input type="radio" name="q" value="${q.v}" id="q_${q.v}" onchange="saveToCloud()"></div>`).join('');
+                <div class="item-card"><span>${q.n}</span> <input type="radio" name="q" value="${q.v}" id="q_${q.v}" onclick="handleRadioClick(this)"></div>`).join('');
+        }
+
+        // ميزة إلغاء تحديد الخيار عند الضغط عليه مرة أخرى
+        function handleRadioClick(radio) {
+            if (radio.dataset.wasChecked === 'true') {
+                radio.checked = false;
+                radio.dataset.wasChecked = 'false';
+            } else {
+                const name = radio.name;
+                document.querySelectorAll(`input[name="${name}"]`).forEach(r => r.dataset.wasChecked = 'false');
+                radio.dataset.wasChecked = 'true';
+            }
+            saveToCloud();
         }
 
         function login() {
@@ -235,7 +230,7 @@
         function saveToCloud() {
             const data = {
                 prayers: { "الفجر": document.getElementById('fajr').checked, "الظهر": document.getElementById('dhuhr').checked, "العصر": document.getElementById('asr').checked, "المغرب": document.getElementById('maghrib').checked, "العشاء": document.getElementById('isha').checked },
-                sunnah: { "سنة الفجر": document.getElementById('sfajr').checked, "الضحى": document.getElementById('duha').checked, "سنة الظهر": document.getElementById('sdhuhr').checked, "سنة المغرب": document.getElementById('smaghrib').checked, "سنة العشاء": document.getElementById('sisha').checked },
+                sunnah: { "سنة الفجر": document.getElementById('sfajr').checked, "الضحى ☀️": document.getElementById('duha').checked, "سنة الظهر": document.getElementById('sdhuhr').checked, "سنة المغرب": document.getElementById('smaghrib').checked, "سنة العشاء": document.getElementById('sisha').checked },
                 taraweeh: document.querySelector('input[name="tr"]:checked')?.value || 0,
                 quran: document.querySelector('input[name="q"]:checked')?.value || "none"
             };
@@ -252,12 +247,12 @@
                 document.getElementById('maghrib').checked = d.prayers["المغرب"];
                 document.getElementById('isha').checked = d.prayers["العشاء"];
                 document.getElementById('sfajr').checked = d.sunnah["سنة الفجر"];
-                document.getElementById('duha').checked = d.sunnah["الضحى"];
+                document.getElementById('duha').checked = d.sunnah["الضحى ☀️"];
                 document.getElementById('sdhuhr').checked = d.sunnah["سنة الظهر"];
                 document.getElementById('smaghrib').checked = d.sunnah["سنة المغرب"];
                 document.getElementById('sisha').checked = d.sunnah["سنة العشاء"];
-                if(d.taraweeh) { const el = document.getElementById('tr'+d.taraweeh); if(el) el.checked = true; }
-                if(d.quran) { const el = document.getElementById('q_'+d.quran); if(el) el.checked = true; }
+                const tr = document.getElementById('tr'+d.taraweeh); if(tr) { tr.checked = true; tr.dataset.wasChecked = 'true'; }
+                const qr = document.getElementById('q_'+d.quran); if(qr) { qr.checked = true; qr.dataset.wasChecked = 'true'; }
                 document.getElementById('daily-pts').innerText = calculatePoints(d);
             });
         }
@@ -273,7 +268,7 @@
                 });
                 ranks.sort((a, b) => b.total - a.total);
                 document.getElementById('ranks-list').innerHTML = ranks.map((r, i) => `
-                    <div class="rank-item" onclick="viewArchive('${r.name}')">
+                    <div class="rank-item" style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; cursor:pointer;" onclick="viewArchive('${r.name}')">
                         <span>${i+1}. ${r.name}</span> <b>${r.total} ن</b>
                     </div>`).join('');
                 document.getElementById('welcome-msg').innerText = "طابت طاعتك يا " + currentUser;
@@ -295,10 +290,10 @@
                             <div class="day-title">${date}</div>
                             
                             <div class="category-title">| الفرائض</div>
-                            ${Object.keys(d.prayers).map(p => `<div class="list-row"><span>${d.prayers[p]?'✅':'❌'}</span> <span>${p}</span></div>`).join('')}
+                            ${prayerOrder.map(p => `<div class="list-row"><span>${d.prayers && d.prayers[p]?'✅':'❌'}</span> <span>${p}</span></div>`).join('')}
 
                             <div class="category-title">| السنن والضحى</div>
-                            ${Object.keys(d.sunnah).map(s => `<div class="list-row"><span>${d.sunnah[s]?'✅':'❌'}</span> <span>${s}</span></div>`).join('')}
+                            ${sunnahOrder.map(s => `<div class="list-row"><span>${d.sunnah && d.sunnah[s]?'✅':'❌'}</span> <span>${s}</span></div>`).join('')}
 
                             <div class="category-title">| القيام والقرآن</div>
                             <div class="list-row"><span>${d.taraweeh || 0} ركعة</span> <span>التراويح</span> </div>
