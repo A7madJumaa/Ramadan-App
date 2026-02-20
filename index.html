@@ -329,4 +329,31 @@
                     Object.keys(days).sort().reverse().forEach(date => {
                         const d = days[date];
                         const canEdit = (name === currentUser && date !== todayStr);
-                       
+                        html += `
+                        <div class="day-section">
+                            <div class="day-header-flex">
+                                <div class="day-title">${getRamadanDate(date)}</div>
+                                ${canEdit ? `<button class="edit-btn" onclick="startEditing('${date}')">تعديل ✏️</button>` : ''}
+                            </div>
+                            <div class="category-title">| الفرائض</div>
+                            ${prayerOrder.map(p => `<div class="list-row"><span>${d.prayers && d.prayers[p]?'✅':'❌'}</span> <span>${p}</span></div>`).join('')}
+                            <div class="category-title">| السنن والضحى</div>
+                            ${sunnahOrder.map(s => `<div class="list-row"><span>${d.sunnah && d.sunnah[s]?'✅':'❌'}</span> <span>${s}</span></div>`).join('')}
+                            <div class="category-title">| القيام والقرآن</div>
+                            <div class="list-row"><span>${d.taraweeh || 0} ركعة</span> <span>التراويح</span> </div>
+                            <div class="list-row"><span>${d.witr || 0} ركعة</span> <span>الوتر</span> </div>
+                            <div class="list-row"><span>${qNames[d.quran] || 'لم يقرأ'}</span> <span>القرآن</span> </div>
+                            <div class="list-row total-row"><span style="color:var(--gold)">${calculatePoints(d)} نقطة</span><span>إجمالي اليوم</span></div>
+                        </div>`;
+                    });
+                }
+                document.getElementById('modal-history-body').innerHTML = html;
+                document.getElementById('archive-modal').style.display = "flex";
+            });
+        }
+
+        function closeModal() { document.getElementById('archive-modal').style.display = "none"; }
+        window.onload = () => { selectedDate = getRealToday(); initOptions(); if(currentUser) showPage('main-menu'); };
+    </script>
+</body>
+</html>
