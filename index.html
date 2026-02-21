@@ -242,7 +242,7 @@
 
         function calculatePoints(d) {
             if(!d) return 0;
-            const qPts = { "none":0, "10p":1, "1j":2, "30p":3, "2j":4, "50p":5, "3j":6 };
+            const qPts = { "none":0, "10p":3, "1j":6, "30p":9, "2j":12, "50p":15, "3j":18 };
             let s = 0;
             if(d.prayers) Object.values(d.prayers).forEach(v => v && (s += 2));
             if(d.sunnah) Object.values(d.sunnah).forEach(v => v && (s += 2));
