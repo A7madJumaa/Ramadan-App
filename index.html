@@ -25,10 +25,9 @@
     .archive-header { background: var(--cream); padding: 20px; text-align: center; border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 5; }
     .day-section { padding: 15px; border-bottom: 8px solid var(--gold); }
     
-    /* التعديل المطلوب: تنسيق التاريخ وزر التعديل بجانبه */
     .day-header-flex { 
         display: flex; 
-        align-items: stretch; /* لجعلهم بنفس الارتفاع */
+        align-items: stretch; 
         justify-content: center; 
         gap: 10px; 
         margin-bottom: 10px; 
@@ -42,7 +41,7 @@
         font-size: 0.9rem; 
         display: flex; 
         align-items: center;
-        flex: 2; /* تأخذ مساحة أكبر */
+        flex: 2; 
     }
     .edit-btn { 
         background: var(--gold); 
@@ -53,7 +52,7 @@
         font-size: 0.75rem; 
         cursor: pointer; 
         font-weight: bold; 
-        flex: 1; /* أقصر من التاريخ */
+        flex: 1; 
         display: flex;
         align-items: center;
         justify-content: center;
@@ -242,6 +241,8 @@
 
         function calculatePoints(d) {
             if(!d) return 0;
+            // يعيد نقاط الهدية فقط إذا كان شرط الهدية قائماً
+            if (d.isBoosted && d.boostedPoints) return d.boostedPoints;
             const qPts = { "none":0, "10p":3, "1j":6, "30p":9, "2j":12, "50p":15, "3j":18 };
             let s = 0;
             if(d.prayers) Object.values(d.prayers).forEach(v => v && (s += 2));
@@ -252,7 +253,21 @@
             return s;
         }
 
-        function saveToCloud() {
+        // دالة مساعدة لحساب النقاط الحقيقية بدون الهدايا
+        function calculateRealPointsOnly(d) {
+            if(!d) return 0;
+            const qPts = { "none":0, "10p":3, "1j":6, "30p":9, "2j":12, "50p":15, "3j":18 };
+            let s = 0;
+            if(d.prayers) Object.values(d.prayers).forEach(v => v && (s += 2));
+            if(d.sunnah) Object.values(d.sunnah).forEach(v => v && (s += 2));
+            s += (parseInt(d.taraweeh) || 0) * 1;
+            s += (parseInt(d.witr) || 0) * 1; 
+            s += qPts[d.quran] || 0;
+            return s;
+        }
+
+        async function saveToCloud() {
+            const maxDailyPoints = 69; 
             const data = {
                 prayers: { "الفجر": document.getElementById('fajr').checked, "الظهر": document.getElementById('dhuhr').checked, "العصر": document.getElementById('asr').checked, "المغرب": document.getElementById('maghrib').checked, "العشاء": document.getElementById('isha').checked },
                 sunnah: { "سنة الفجر": document.getElementById('sfajr').checked, "الضحى ☀️": document.getElementById('duha').checked, "سنة الظهر": document.getElementById('sdhuhr').checked, "سنة المغرب": document.getElementById('smaghrib').checked, "سنة العشاء": document.getElementById('sisha').checked },
@@ -260,6 +275,64 @@
                 witr: document.querySelector('input[name="wt"]:checked')?.value || 0,
                 quran: document.querySelector('input[name="q"]:checked')?.value || "none"
             };
+
+            let realCurrentPoints = calculateRealPointsOnly(data);
+
+            if (selectedDate === getRealToday()) {
+                const snapshot = await db.ref('users/' + currentUser).once('value');
+                const userData = snapshot.val();
+                const wasBoostedBefore = userData?.days?.[selectedDate]?.isBoosted;
+
+                if (userData && userData.days) {
+                    let totalDays = 0;
+                    let lowProgressDays = 0;
+                    Object.keys(userData.days).forEach(date => {
+                        if (date !== selectedDate) {
+                            totalDays++;
+                            if (calculateRealPointsOnly(userData.days[date]) < (maxDailyPoints * 0.2)) lowProgressDays++;
+                        }
+                    });
+
+                    // شرط الاستحقاق: خمول سابق + إنجاز حالي >= 60%
+                    const meetsCriteria = (totalDays > 0 && (lowProgressDays / totalDays) >= 0.5 && realCurrentPoints >= (maxDailyPoints * 0.6));
+
+                    if (meetsCriteria) {
+                        const allUsersSnap = await db.ref('users').once('value');
+                        const allUsers = allUsersSnap.val();
+                        let maxTotal = 0;
+                        usersList.forEach(u => {
+                            let uTotal = 0;
+                            if (allUsers[u] && allUsers[u].days) {
+                                Object.keys(allUsers[u].days).forEach(d => {
+                                    if (u !== currentUser || d !== selectedDate) uTotal += calculatePoints(allUsers[u].days[d]);
+                                });
+                            }
+                            if (uTotal > maxTotal) maxTotal = uTotal;
+                        });
+
+                        let myOtherDaysTotal = 0;
+                        Object.keys(userData.days).forEach(d => { if(d !== selectedDate) myOtherDaysTotal += calculatePoints(userData.days[d]); });
+                        let boostPoints = (maxTotal - 20) - myOtherDaysTotal;
+                        
+                        if (boostPoints > realCurrentPoints) {
+                            data.isBoosted = true;
+                            data.boostedPoints = boostPoints;
+                            // يظهر الإشعار فقط إذا لم يكن قد حصل عليها في الضغطة السابقة مباشرة
+                            if (!wasBoostedBefore) {
+                                alert(`🌟 هذه هي هدية حماستك!\nلقد حصلت على ${boostPoints} نقطة اليوم (بدلاً من ${realCurrentPoints}) لتنافس المتصدرين بقوة!`);
+                            }
+                        } else {
+                            data.isBoosted = false;
+                        }
+                    } else {
+                        // إذا لم يعد يحقق الشرط (مثلاً حذف علامة صح)، نلغي الهدية
+                        data.isBoosted = false;
+                        if (wasBoostedBefore) {
+                            alert("تم إلغاء هدية الحماسة لتراجع نسبة إنجازك عن المطلوب.");
+                        }
+                    }
+                }
+            }
             db.ref('users/' + currentUser + '/days/' + selectedDate).set(data);
         }
 
