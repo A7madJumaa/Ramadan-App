@@ -289,7 +289,7 @@
                     Object.keys(userData.days).forEach(date => {
                         if (date !== selectedDate) {
                             totalDays++;
-                            if (calculateRealPointsOnly(userData.days[date]) < (maxDailyPoints * 0.2)) lowProgressDays++;
+                            if (calculateRealPointsOnly(userData.days[date]) < (maxDailyPoints * 0.13)) lowProgressDays++;
                         }
                     });
 
