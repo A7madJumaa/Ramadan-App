@@ -294,7 +294,7 @@
                     });
 
                     // شرط الاستحقاق: خمول سابق + إنجاز حالي >= 60%
-                    const meetsCriteria = (totalDays > 0 && (lowProgressDays / totalDays) >= 0.5 && realCurrentPoints >= (maxDailyPoints * 0.6));
+                    const meetsCriteria = (totalDays > 0 && (lowProgressDays / totalDays) >= 0.5 && realCurrentPoints >= (maxDailyPoints * 0.5));
 
                     if (meetsCriteria) {
                         const allUsersSnap = await db.ref('users').once('value');
