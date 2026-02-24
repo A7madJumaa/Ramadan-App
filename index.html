@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-  <head>
+<head>
     <meta charset="UTF-8">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1b3022">
@@ -62,13 +62,18 @@
     .list-row { display: flex; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid #eee; }
     .total-row { background: var(--white); border: 1px dashed var(--gold); font-weight: bold; margin-top: 15px; border-radius: 10px; }
     .editing-banner { background: #e67e22; color: white; padding: 8px; font-size: 0.75rem; font-weight: bold; margin-top: 40px; margin-bottom: 10px; border-radius: 10px; }
+    
+    input[type="text"], input[type="password"] {
+        width: 80%; padding: 12px; border-radius: 10px; border: 1px solid var(--gold); text-align: center; margin-bottom: 10px;
+    }
     </style>
 </head>
 <body>
 
     <div id="login-screen" class="container">
         <h2>🌙 سجل الطاعة</h2>
-        <input type="text" id="username-input" placeholder="اسمك..." style="width:80%; padding:12px; border-radius:10px; border:1px solid var(--gold); text-align:center;">
+        <input type="text" id="username-input" placeholder="اسمك...">
+        <input type="password" id="password-input" placeholder="رمز الدخول الخاص بك...">
         <button onclick="login()">دخول</button>
     </div>
 
@@ -151,7 +156,16 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const usersList = ["احمد", "عمر", "حلا", "يونس", "مؤيد","جمال"];
+
+        // قائمة المستخدمين مع كلمات المرور (تستطيع تغيير الأرقام من هنا)
+        const userCredentials = {
+            "احمد": "1511",
+            "عمر": "2222",
+            "حلا": "3333",
+            "جمال": "4444"
+        };
+        const usersList = Object.keys(userCredentials);
+
         let currentUser = localStorage.getItem('familyUser') || "";
         let selectedDate = ""; 
         
@@ -198,8 +212,17 @@
 
         function login() {
             const name = document.getElementById('username-input').value.trim();
-            if (usersList.includes(name)) { currentUser = name; localStorage.setItem('familyUser', name); selectedDate = getRealToday(); showPage('main-menu'); }
-            else { alert("الاسم غير موجود"); }
+            const pass = document.getElementById('password-input').value.trim();
+            
+            if (userCredentials[name] && userCredentials[name] === pass) { 
+                currentUser = name; 
+                localStorage.setItem('familyUser', name); 
+                selectedDate = getRealToday(); 
+                showPage('main-menu'); 
+            }
+            else { 
+                alert("الاسم أو الرمز غير صحيح"); 
+            }
         }
 
         function logout() { localStorage.removeItem('familyUser'); location.reload(); }
@@ -241,8 +264,6 @@
 
         function calculatePoints(d) {
             if(!d) return 0;
-            // يعيد نقاط الهدية فقط إذا كان شرط الهدية قائماً
-            if (d.isBoosted && d.boostedPoints) return d.boostedPoints;
             const qPts = { "none":0, "10p":3, "1j":6, "30p":9, "2j":12, "50p":15, "3j":18 };
             let s = 0;
             if(d.prayers) Object.values(d.prayers).forEach(v => v && (s += 2));
@@ -253,21 +274,7 @@
             return s;
         }
 
-        // دالة مساعدة لحساب النقاط الحقيقية بدون الهدايا
-        function calculateRealPointsOnly(d) {
-            if(!d) return 0;
-            const qPts = { "none":0, "10p":3, "1j":6, "30p":9, "2j":12, "50p":15, "3j":18 };
-            let s = 0;
-            if(d.prayers) Object.values(d.prayers).forEach(v => v && (s += 2));
-            if(d.sunnah) Object.values(d.sunnah).forEach(v => v && (s += 2));
-            s += (parseInt(d.taraweeh) || 0) * 1;
-            s += (parseInt(d.witr) || 0) * 1; 
-            s += qPts[d.quran] || 0;
-            return s;
-        }
-
-        async function saveToCloud() {
-            const maxDailyPoints = 69; 
+        function saveToCloud() {
             const data = {
                 prayers: { "الفجر": document.getElementById('fajr').checked, "الظهر": document.getElementById('dhuhr').checked, "العصر": document.getElementById('asr').checked, "المغرب": document.getElementById('maghrib').checked, "العشاء": document.getElementById('isha').checked },
                 sunnah: { "سنة الفجر": document.getElementById('sfajr').checked, "الضحى ☀️": document.getElementById('duha').checked, "سنة الظهر": document.getElementById('sdhuhr').checked, "سنة المغرب": document.getElementById('smaghrib').checked, "سنة العشاء": document.getElementById('sisha').checked },
@@ -275,64 +282,6 @@
                 witr: document.querySelector('input[name="wt"]:checked')?.value || 0,
                 quran: document.querySelector('input[name="q"]:checked')?.value || "none"
             };
-
-            let realCurrentPoints = calculateRealPointsOnly(data);
-
-            if (selectedDate === getRealToday()) {
-                const snapshot = await db.ref('users/' + currentUser).once('value');
-                const userData = snapshot.val();
-                const wasBoostedBefore = userData?.days?.[selectedDate]?.isBoosted;
-
-                if (userData && userData.days) {
-                    let totalDays = 0;
-                    let lowProgressDays = 0;
-                    Object.keys(userData.days).forEach(date => {
-                        if (date !== selectedDate) {
-                            totalDays++;
-                            if (calculateRealPointsOnly(userData.days[date]) < (maxDailyPoints * 0.13)) lowProgressDays++;
-                        }
-                    });
-
-                    // شرط الاستحقاق: خمول سابق + إنجاز حالي >= 60%
-                    const meetsCriteria = (totalDays > 0 && (lowProgressDays / totalDays) >= 0.5 && realCurrentPoints >= (maxDailyPoints * 0.35));
-
-                    if (meetsCriteria) {
-                        const allUsersSnap = await db.ref('users').once('value');
-                        const allUsers = allUsersSnap.val();
-                        let maxTotal = 0;
-                        usersList.forEach(u => {
-                            let uTotal = 0;
-                            if (allUsers[u] && allUsers[u].days) {
-                                Object.keys(allUsers[u].days).forEach(d => {
-                                    if (u !== currentUser || d !== selectedDate) uTotal += calculatePoints(allUsers[u].days[d]);
-                                });
-                            }
-                            if (uTotal > maxTotal) maxTotal = uTotal;
-                        });
-
-                        let myOtherDaysTotal = 0;
-                        Object.keys(userData.days).forEach(d => { if(d !== selectedDate) myOtherDaysTotal += calculatePoints(userData.days[d]); });
-                        let boostPoints = (maxTotal - 20) - myOtherDaysTotal;
-                        
-                        if (boostPoints > realCurrentPoints) {
-                            data.isBoosted = true;
-                            data.boostedPoints = boostPoints;
-                            // يظهر الإشعار فقط إذا لم يكن قد حصل عليها في الضغطة السابقة مباشرة
-                            if (!wasBoostedBefore) {
-                                alert(`🌟 هذه هي هدية حماستك!\nلقد حصلت على ${boostPoints} نقطة اليوم (بدلاً من ${realCurrentPoints}) لتنافس المتصدرين بقوة!`);
-                            }
-                        } else {
-                            data.isBoosted = false;
-                        }
-                    } else {
-                        // إذا لم يعد يحقق الشرط (مثلاً حذف علامة صح)، نلغي الهدية
-                        data.isBoosted = false;
-                        if (wasBoostedBefore) {
-                            alert("تم إلغاء هدية الحماسة لتراجع نسبة إنجازك عن المطلوب.");
-                        }
-                    }
-                }
-            }
             db.ref('users/' + currentUser + '/days/' + selectedDate).set(data);
         }
 
