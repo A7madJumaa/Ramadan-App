@@ -71,7 +71,7 @@
 <body>
 
     <div id="login-screen" class="container">
-        <h2>🌙 سجل الطاعة</h2>
+        <h2>🌙 منافسة رمضان</h2>
         <input type="text" id="username-input" placeholder="اسمك...">
         <input type="password" id="password-input" placeholder="رمز الدخول الخاص بك...">
         <button onclick="login()">دخول</button>
@@ -79,7 +79,7 @@
 
     <div id="main-menu" class="container hidden">
         <button class="logout-mini" onclick="logout()">تسجيل الخروج</button>
-        <div id="edit-indicator" class="hidden editing-banner">⚠️ وضع التعديل: أنت تغير بيانات يوم سابق</div>
+        <div id="edit-indicator" class="hidden editing-banner">⚠️ أنت تغير بيانات يوم سابق</div>
         <div class="points-badge">نقاط <span id="viewing-date-label">اليوم</span>: <span id="daily-pts">0</span> 🏆</div>
         <h3 id="welcome-msg"></h3>
         <div style="background: white; border-radius: 20px; padding: 10px; border: 1px solid var(--gold);">
@@ -110,7 +110,7 @@
         <button onclick="showPage('main-menu')" style="width:auto; padding:5px 15px; background:#666; border:none; color:white;">↩ عودة</button>
         <h3>السنن والضحى</h3>
         <div class="item-card"><span>سنة الفجر</span> <input type="checkbox" id="sfajr" onchange="saveToCloud()"></div>
-        <div class="item-card"><span>الضحى ☀️</span> <input type="checkbox" id="duha" onchange="saveToCloud()"></div>
+        <div class="item-card"><span>الضحى</span> <input type="checkbox" id="duha" onchange="saveToCloud()"></div>
         <div class="item-card"><span>سنة الظهر</span> <input type="checkbox" id="sdhuhr" onchange="saveToCloud()"></div>
         <div class="item-card"><span>سنة المغرب</span> <input type="checkbox" id="smaghrib" onchange="saveToCloud()"></div>
         <div class="item-card"><span>سنة العشاء</span> <input type="checkbox" id="sisha" onchange="saveToCloud()"></div>
