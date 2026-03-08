@@ -13,8 +13,11 @@
     <style>
     * { -webkit-tap-highlight-color: transparent; outline: none !important; -webkit-user-select: none; user-select: none; }
     :root { --deep-oil: #1b3022; --gold: #c5a059; --cream: #f9f7f2; --white: #ffffff; --soft-gold: rgba(197, 160, 89, 0.1); }
-    body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--deep-oil); display: flex; justify-content: center; min-height: 100vh; margin: 0; color: var(--deep-oil); }
-    .container { background: var(--cream); padding: 1.5rem; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 95%; max-width: 480px; text-align: center; border: 2px solid var(--gold); margin: 20px 0; position: relative; height: fit-content; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--deep-oil); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; color: var(--deep-oil); }
+    
+    /* جعل الحاويات تتوسط الشاشة دائماً */
+    .container { background: var(--cream); padding: 1.5rem; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 95%; max-width: 480px; text-align: center; border: 2px solid var(--gold); margin: 20px auto; position: relative; height: fit-content; }
+    
     .logout-mini { position: absolute; top: 15px; left: 15px; background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 5px 10px; font-size: 0.7rem; border-radius: 8px; cursor: pointer; z-index: 10; width: auto !important; }
     
     .points-wrapper { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; margin-top: 40px; }
@@ -22,55 +25,31 @@
     .nav-btn:active { transform: scale(0.9); opacity: 0.8; }
     .points-badge { background: var(--deep-oil); color: var(--gold); padding: 10px 20px; border-radius: 50px; font-weight: bold; flex-grow: 0; min-width: 140px; }
 
-    button { width: 100%; padding: 14px; margin: 8px 0; cursor: pointer; border: 1px solid var(--gold); border-radius: 15px; background: var(--deep-oil); color: var(--gold); font-weight: bold; }
+    button { width: 100%; padding: 14px; margin: 8px 0; cursor: pointer; border: 1px solid var(--gold); border-radius: 15px; background: var(--deep-oil); color: var(--gold); font-weight: bold; position: relative; }
+    
+    /* تنسيق العداد الصغير على الأزرار */
+    .btn-counter { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); background: var(--gold); color: var(--deep-oil); padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; }
+
     .item-card { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; background: var(--white); margin-bottom: 10px; border-radius: 15px; border: 1px solid var(--soft-gold); }
-    .hidden { display: none; }
+    .hidden { display: none !important; }
     .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
     .modal-content { background: var(--cream); padding: 0; border-radius: 25px; width: 92%; max-width: 420px; max-height: 85vh; overflow-y: auto; border: 2px solid var(--gold); }
     .archive-header { background: var(--cream); padding: 20px; text-align: center; border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 5; }
     .day-section { padding: 15px; border-bottom: 8px solid var(--gold); }
     
-    .day-header-flex { 
-        display: flex; 
-        align-items: stretch; 
-        justify-content: center; 
-        gap: 10px; 
-        margin-bottom: 10px; 
-    }
-    .day-title { 
-        background: var(--deep-oil); 
-        color: var(--gold); 
-        padding: 8px 20px; 
-        border-radius: 12px; 
-        font-weight: bold; 
-        font-size: 0.9rem; 
-        display: flex; 
-        align-items: center;
-        flex: 2; 
-    }
-    .edit-btn { 
-        background: var(--gold); 
-        color: var(--deep-oil); 
-        border: none; 
-        padding: 0 12px; 
-        border-radius: 12px; 
-        font-size: 0.75rem; 
-        cursor: pointer; 
-        font-weight: bold; 
-        flex: 1; 
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+    .day-header-flex { display: flex; align-items: stretch; justify-content: center; gap: 10px; margin-bottom: 10px; }
+    .day-title { background: var(--deep-oil); color: var(--gold); padding: 8px 20px; border-radius: 12px; font-weight: bold; font-size: 0.9rem; display: flex; align-items: center; flex: 2; }
+    .edit-btn { background: var(--gold); color: var(--deep-oil); border: none; padding: 0 12px; border-radius: 12px; font-size: 0.75rem; cursor: pointer; font-weight: bold; flex: 1; display: flex; align-items: center; justify-content: center; }
 
     .category-title { color: var(--gold); font-weight: bold; padding: 8px 15px 5px; text-align: right; border-right: 4px solid var(--gold); margin-top: 10px; }
     .list-row { display: flex; justify-content: space-between; padding: 10px 15px; border-bottom: 1px solid #eee; }
     .total-row { background: var(--white); border: 1px dashed var(--gold); font-weight: bold; margin-top: 15px; border-radius: 10px; }
     .editing-banner { background: #e67e22; color: white; padding: 8px; font-size: 0.75rem; font-weight: bold; margin-top: 40px; margin-bottom: 10px; border-radius: 10px; }
     
-    input[type="text"], input[type="password"] {
-        width: 80%; padding: 12px; border-radius: 10px; border: 1px solid var(--gold); text-align: center; margin-bottom: 10px;
-    }
+    input[type="text"], input[type="password"] { width: 80%; padding: 12px; border-radius: 10px; border: 1px solid var(--gold); text-align: center; margin-bottom: 10px; }
+    
+    .back-btn-container { margin-top: 20px; border-top: 1px solid var(--soft-gold); padding-top: 10px; }
+    .back-btn { width: auto; padding: 8px 25px; background: #666; border: none; color: white; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -84,7 +63,6 @@
 
     <div id="main-menu" class="container hidden">
         <button class="logout-mini" onclick="logout()">تسجيل الخروج</button>
-        <div id="edit-indicator" class="hidden editing-banner">⚠️ أنت تغير بيانات يوم سابق</div>
         
         <div class="points-wrapper">
             <button class="nav-btn" onclick="changeDate(1)">❮</button>
@@ -98,51 +76,61 @@
             <div id="ranks-list"></div>
         </div>
         <div style="margin-top: 10px;">
-            <button onclick="showPage('prayer-screen')">🕌 الفرائض</button>
-            <button onclick="showPage('sunnah-screen')">✨ السنن والضحى</button>
-            <button onclick="showPage('taraweeh-screen')">🌙 التراويح</button>
-            <button onclick="showPage('witr-screen')">🌙 صلاة الوتر</button>
-            <button onclick="showPage('quran-screen')">📖 ورد القرآن</button>
+            <button onclick="showPage('prayer-screen')">🕌 الفرائض <span id="count-prayers" class="btn-counter">0/10</span></button>
+            <button onclick="showPage('sunnah-screen')">✨ السنن والضحى <span id="count-sunnah" class="btn-counter">0/10</span></button>
+            <button onclick="showPage('taraweeh-screen')">🌙 التراويح <span id="count-taraweeh" class="btn-counter">0/20</span></button>
+            <button onclick="showPage('witr-screen')">🌙 صلاة الوتر <span id="count-witr" class="btn-counter">0/11</span></button>
+            <button onclick="showPage('quran-screen')">📖 ورد القرآن <span id="count-quran" class="btn-counter">0/18</span></button>
             <button id="back-to-today" class="hidden" style="background:#27ae60; color:white; font-size: 0.9rem;" onclick="resetToToday()">✅ العودة لليوم الحالي</button>
         </div>
     </div>
 
     <div id="prayer-screen" class="container hidden">
-        <button onclick="showPage('main-menu')" style="width:auto; padding:5px 15px; background:#666; border:none; color:white;">↩ عودة</button>
         <h3>الصلوات المفروضة</h3>
         <div class="item-card"><span>الفجر</span> <input type="checkbox" id="fajr" onchange="saveToCloud()"></div>
         <div class="item-card"><span>الظهر</span> <input type="checkbox" id="dhuhr" onchange="saveToCloud()"></div>
         <div class="item-card"><span>العصر</span> <input type="checkbox" id="asr" onchange="saveToCloud()"></div>
         <div class="item-card"><span>المغرب</span> <input type="checkbox" id="maghrib" onchange="saveToCloud()"></div>
         <div class="item-card"><span>العشاء</span> <input type="checkbox" id="isha" onchange="saveToCloud()"></div>
+        <div class="back-btn-container">
+            <button class="back-btn" onclick="showPage('main-menu')">↩ عودة</button>
+        </div>
     </div>
 
     <div id="sunnah-screen" class="container hidden">
-        <button onclick="showPage('main-menu')" style="width:auto; padding:5px 15px; background:#666; border:none; color:white;">↩ عودة</button>
         <h3>السنن والضحى</h3>
         <div class="item-card"><span>سنة الفجر</span> <input type="checkbox" id="sfajr" onchange="saveToCloud()"></div>
         <div class="item-card"><span>الضحى</span> <input type="checkbox" id="duha" onchange="saveToCloud()"></div>
         <div class="item-card"><span>سنة الظهر</span> <input type="checkbox" id="sdhuhr" onchange="saveToCloud()"></div>
         <div class="item-card"><span>سنة المغرب</span> <input type="checkbox" id="smaghrib" onchange="saveToCloud()"></div>
         <div class="item-card"><span>سنة العشاء</span> <input type="checkbox" id="sisha" onchange="saveToCloud()"></div>
+        <div class="back-btn-container">
+            <button class="back-btn" onclick="showPage('main-menu')">↩ عودة</button>
+        </div>
     </div>
 
     <div id="taraweeh-screen" class="container hidden">
-        <button onclick="showPage('main-menu')" style="width:auto; padding:5px 15px; background:#666; border:none; color:white;">↩ عودة</button>
         <h3>صلاة التراويح</h3>
         <div id="taraweeh-list"></div>
+        <div class="back-btn-container">
+            <button class="back-btn" onclick="showPage('main-menu')">↩ عودة</button>
+        </div>
     </div>
 
     <div id="witr-screen" class="container hidden">
-        <button onclick="showPage('main-menu')" style="width:auto; padding:5px 15px; background:#666; border:none; color:white;">↩ عودة</button>
         <h3>صلاة الوتر</h3>
         <div id="witr-list"></div>
+        <div class="back-btn-container">
+            <button class="back-btn" onclick="showPage('main-menu')">↩ عودة</button>
+        </div>
     </div>
 
     <div id="quran-screen" class="container hidden">
-        <button onclick="showPage('main-menu')" style="width:auto; padding:5px 15px; background:#666; border:none; color:white;">↩ عودة</button>
         <h3>ورد القرآن</h3>
         <div id="quran-list"></div>
+        <div class="back-btn-container">
+            <button class="back-btn" onclick="showPage('main-menu')">↩ عودة</button>
+        </div>
     </div>
 
     <div id="archive-modal" class="modal">
@@ -192,10 +180,8 @@
         function changeDate(days) {
             let current = new Date(selectedDate);
             current.setDate(current.getDate() + days);
-            
             const today = new Date(getRealToday());
             if (current > today) return;
-
             selectedDate = current.toISOString().split('T')[0];
             showPage('main-menu');
         }
@@ -238,21 +224,18 @@
         function login() {
             const name = document.getElementById('username-input').value.trim();
             const pass = document.getElementById('password-input').value.trim();
-            
             if (userCredentials[name] && userCredentials[name] === pass) { 
                 currentUser = name; 
                 localStorage.setItem('familyUser', name); 
                 selectedDate = getRealToday(); 
                 showPage('main-menu'); 
-            }
-            else { 
-                alert("الاسم أو الرمز غير صحيح"); 
-            }
+            } else { alert("الاسم أو الرمز غير صحيح"); }
         }
 
         function logout() { localStorage.removeItem('familyUser'); location.reload(); }
 
         function showPage(id) {
+            window.scrollTo(0,0); // حل مشكلة السكرول عند التنقل
             document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
             if (id === 'main-menu') { 
@@ -299,6 +282,30 @@
             return s;
         }
 
+        // دالة لتحديث العدادات على الأزرار
+        function updateButtonCounters(d) {
+            if(!d) {
+                document.getElementById('count-prayers').innerText = "0/10";
+                document.getElementById('count-sunnah').innerText = "0/10";
+                document.getElementById('count-taraweeh').innerText = "0/20";
+                document.getElementById('count-witr').innerText = "0/11";
+                document.getElementById('count-quran').innerText = "0/18";
+                return;
+            }
+            
+            let pScore = 0; if(d.prayers) Object.values(d.prayers).forEach(v => v && (pScore += 2));
+            document.getElementById('count-prayers').innerText = `${pScore}/10`;
+            
+            let sScore = 0; if(d.sunnah) Object.values(d.sunnah).forEach(v => v && (sScore += 2));
+            document.getElementById('count-sunnah').innerText = `${sScore}/10`;
+            
+            document.getElementById('count-taraweeh').innerText = `${(parseInt(d.taraweeh) || 0)}/20`;
+            document.getElementById('count-witr').innerText = `${(parseInt(d.witr) || 0)}/11`;
+            
+            const qPts = { "none":0, "10p":3, "1j":6, "30p":9, "2j":12, "50p":15, "3j":18 };
+            document.getElementById('count-quran').innerText = `${qPts[d.quran] || 0}/18`;
+        }
+
         function saveToCloud() {
             const data = {
                 prayers: { "الفجر": document.getElementById('fajr').checked, "الظهر": document.getElementById('dhuhr').checked, "العصر": document.getElementById('asr').checked, "المغرب": document.getElementById('maghrib').checked, "العشاء": document.getElementById('isha').checked },
@@ -308,6 +315,7 @@
                 quran: document.querySelector('input[name="q"]:checked')?.value || "none"
             };
             db.ref('users/' + currentUser + '/days/' + selectedDate).set(data);
+            updateButtonCounters(data);
         }
 
         function loadFromCloud() {
@@ -315,7 +323,7 @@
                 const d = snap.val(); 
                 document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
                 document.querySelectorAll('input[type="radio"]').forEach(r => {r.checked = false; r.dataset.wasChecked = 'false';});
-                if(!d) { document.getElementById('daily-pts').innerText = "0"; return; }
+                if(!d) { document.getElementById('daily-pts').innerText = "0"; updateButtonCounters(null); return; }
                 if(d.prayers) {
                     document.getElementById('fajr').checked = d.prayers["الفجر"] || false;
                     document.getElementById('dhuhr').checked = d.prayers["الظهر"] || false;
@@ -334,6 +342,7 @@
                 const wt = document.getElementById('wt'+d.witr); if(wt) { wt.checked = true; wt.dataset.wasChecked = 'true'; }
                 const qr = document.getElementById('q_'+d.quran); if(qr) { qr.checked = true; qr.dataset.wasChecked = 'true'; }
                 document.getElementById('daily-pts').innerText = calculatePoints(d);
+                updateButtonCounters(d);
             });
         }
 
