@@ -12,7 +12,7 @@
 
     <style>
     * { -webkit-tap-highlight-color: transparent; outline: none !important; -webkit-user-select: none; user-select: none; }
-    :root { --deep-oil: #1b3022; --gold: #c5a059; --cream: #f9f7f2; --white: #ffffff; --soft-gold: rgba(197, 160, 89, 0.1); }
+    :root { --deep-oil: #1b3022; --gold: #c5a059; --cream: #f9f7f2; --white: #ffffff; -.-soft-gold: rgba(197, 160, 89, 0.1); }
     body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--deep-oil); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; color: var(--deep-oil); }
     
     .container { background: var(--cream); padding: 1.5rem; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 95%; max-width: 480px; text-align: center; border: 2px solid var(--gold); margin: 20px auto; position: relative; height: fit-content; }
@@ -72,7 +72,6 @@
     .archive-header { background: var(--cream); padding: 20px; text-align: center; border-bottom: 2px solid var(--gold); position: sticky; top: 0; z-index: 5; }
     .day-section { padding: 15px; border-bottom: 8px solid var(--gold); }
     
-    /* التعديل المطلوب لتماثل تصميم الواجهة الرئيسية */
     .day-header-flex { 
         display: flex; 
         align-items: center; 
@@ -121,6 +120,31 @@
     
     .back-btn-container { margin-top: 20px; border-top: 1px solid var(--soft-gold); padding-top: 10px; }
     .back-btn { width: auto; padding: 8px 25px; background: #666; border: none; color: white; font-size: 0.9rem; }
+
+    /* تنسيق صندوق الترتيب المحدث بالخلفية الهندسية الإسلامية المتشابكة */
+    .ranks-card { 
+        background-color: var(--white); 
+        /* تم استبدال النجوم برسم هندسي متشابك (SVG) باللون الذهبي الخفيف */
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%23c5a059' stroke-width='0.8' stroke-opacity='0.4'%3E%3Cpath d='M10 10a8 8 0 0 1 8 8 6 6 0 1 0-8-8z'/%3E%3Cpath d='M45 40l1 3 3 1-3 1-1 3-1-3-3-1 3-1z'/%3E%3C/g%3E%3C/svg%3E");
+
+
+        border-radius: 20px; 
+        padding: 10px; 
+        border: 1px solid var(--gold);
+        box-shadow: inset 0 0 15px rgba(197, 160, 89, 0.05);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .rank-item { 
+        display: flex; 
+        justify-content: space-between; 
+        padding: 10px; 
+        border-bottom: 1px solid rgba(197, 160, 89, 0.1); 
+        cursor: pointer; 
+        position: relative;
+        z-index: 1; /* لضمان ظهور النص فوق الخلفية */
+    }
     </style>
 </head>
 <body>
@@ -147,8 +171,8 @@
         </div>
 
         <h3 id="welcome-msg"></h3>
-        <div style="background: white; border-radius: 20px; padding: 10px; border: 1px solid var(--gold);">
-            <h4 style="margin:5px">📊 الترتيب العام</h4>
+        <div class="ranks-card">
+            <h4 style="margin:5px; position: relative; z-index: 1;">📊 الترتيب العام</h4>
             <div id="ranks-list"></div>
         </div>
         <div style="margin-top: 10px;">
@@ -433,7 +457,7 @@
                 });
                 ranks.sort((a, b) => b.total - a.total);
                 document.getElementById('ranks-list').innerHTML = ranks.map((r, i) => `
-                    <div class="rank-item" style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; cursor:pointer;" onclick="viewArchive('${r.name}')">
+                    <div class="rank-item" onclick="viewArchive('${r.name}')">
                         <span>${i+1}. ${r.name}</span> <b>${r.total} نقطة</b>
                     </div>`).join('');
                 document.getElementById('welcome-msg').innerText = "طابت طاعتك يا " + currentUser;
